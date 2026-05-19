@@ -52,7 +52,13 @@ git branch --show-current
 git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null || echo "no remote default"
 ```
 
-If you're on the repo's default branch (typically `main`, `master`, or whatever `origin/HEAD` points to), **create a feature branch before committing**. Committing directly to the default branch is usually not the right move — the work belongs on its own branch.
+Some branches are shared integration points that shouldn't receive direct commits — work belongs on its own feature branch instead. **Create a feature branch before committing if you're on any of these:**
+
+- The repo's default branch (`main`, `master`, or whatever `origin/HEAD` points to)
+- Common integration branches: `develop`, `dev`, `staging`, `next`
+- Release branches matching patterns like `release/*`, `release-*`
+
+The underlying reason is the same for all of them: these branches are shared, often protected, and changes flow in via PRs rather than direct commits.
 
 To name the branch, look at existing branch names for conventions:
 
@@ -68,7 +74,7 @@ Create and switch to the new branch before staging or committing anything:
 git checkout -b <branch-name>
 ```
 
-Tell the user: "I'm on `main`, so I'll create a branch `<name>` for this."
+Tell the user which protected branch you were on and what branch you created: "I'm on `develop`, so I'll create `feat/add-email-verification` for this."
 
 **If you're already on a feature branch**, skip this step entirely — just proceed to commit.
 
