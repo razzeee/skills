@@ -45,7 +45,36 @@ A single logical change belongs in a single commit. But if the staged changes cl
 
 When splitting, commit each group separately: unstage the second group, commit the first, then stage and commit the second.
 
-## Step 2: Learn the repo's commit style
+## Step 2: Check the current branch
+
+```bash
+git branch --show-current
+git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null || echo "no remote default"
+```
+
+If you're on the repo's default branch (typically `main`, `master`, or whatever `origin/HEAD` points to), **create a feature branch before committing**. Committing directly to the default branch is usually not the right move — the work belongs on its own branch.
+
+To name the branch, look at existing branch names for conventions:
+
+```bash
+git branch -a
+```
+
+Common patterns: `feat/add-login`, `fix/null-pointer`, `username/short-description`, `TICKET-123-description`. Match what you see. If there's no clear pattern, use a short kebab-case description of the change (e.g. `add-email-verification`, `fix-db-race-condition`).
+
+Create and switch to the new branch before staging or committing anything:
+
+```bash
+git checkout -b <branch-name>
+```
+
+Tell the user: "I'm on `main`, so I'll create a branch `<name>` for this."
+
+**If you're already on a feature branch**, skip this step entirely — just proceed to commit.
+
+**If HEAD is detached** (not on any branch), warn the user and ask whether to create a branch or commit in place.
+
+## Step 3: Learn the repo's commit style
 
 Look at recent commits to understand the conventions this repo uses:
 
@@ -67,7 +96,7 @@ Match what you find. Don't impose a different convention. If the repo uses plain
 
 If the repo has no commits yet, default to plain imperative prose (no type prefix).
 
-## Step 3: Compose the message
+## Step 4: Compose the message
 
 Write a commit message that:
 
@@ -77,7 +106,7 @@ Write a commit message that:
 
 The message should be honest about what changed. Read the diff carefully — don't just describe the filenames, describe the actual behavior change.
 
-## Step 4: Commit
+## Step 5: Commit
 
 ```bash
 git commit -m "<subject>" -m "<body paragraph 1>" -m "<body paragraph 2>"
@@ -93,7 +122,7 @@ git commit -F - <<'EOF'
 EOF
 ```
 
-## Step 5: Confirm
+## Step 6: Confirm
 
 Show the result. For a single commit:
 
