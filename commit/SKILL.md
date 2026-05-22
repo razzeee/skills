@@ -52,31 +52,48 @@ git branch --show-current
 git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null || echo "no remote default"
 ```
 
-Some branches are shared integration points that shouldn't receive direct commits — work belongs on its own feature branch instead. **Create a feature branch before committing if you're on any of these:**
+Before committing, decide whether the current branch is the right place for this work. There are three situations that call for a new branch:
 
+**1. You're on a protected/shared branch**
+
+These branches shouldn't receive direct commits — work flows in via PRs:
 - The repo's default branch (`main`, `master`, or whatever `origin/HEAD` points to)
 - Common integration branches: `develop`, `dev`, `staging`, `next`
 - Release branches matching patterns like `release/*`, `release-*`
 
-The underlying reason is the same for all of them: these branches are shared, often protected, and changes flow in via PRs rather than direct commits.
+**2. The current branch has already been merged**
 
-To name the branch, look at existing branch names for conventions:
+Check whether the branch has been merged into the default branch:
+
+```bash
+git branch --merged origin/main 2>/dev/null || git branch --merged origin/master 2>/dev/null
+```
+
+If the current branch appears in that list, it's already been merged — committing more work here would be confusing. Create a fresh branch instead.
+
+**3. The branch topic doesn't match the work**
+
+Compare the current branch name to what the user is actually working on. If you're on `fix/login-redirect` but the user just finished building the CSV export feature, that branch is the wrong home for this commit. Create a new branch that reflects the actual work.
+
+Use session context to make this call — what has the conversation been about? Does the branch name still describe it?
+
+---
+
+In all three cases, name the new branch by first checking existing conventions:
 
 ```bash
 git branch -a
 ```
 
-Common patterns: `feat/add-login`, `fix/null-pointer`, `username/short-description`, `TICKET-123-description`. Match what you see. If there's no clear pattern, use a short kebab-case description of the change (e.g. `add-email-verification`, `fix-db-race-condition`).
+Common patterns: `feat/add-login`, `fix/null-pointer`, `username/short-description`, `TICKET-123-description`. Match what you see. If there's no clear pattern, use a short kebab-case description of the change.
 
-Create and switch to the new branch before staging or committing anything:
+Create and switch before staging or committing anything:
 
 ```bash
 git checkout -b <branch-name>
 ```
 
-Tell the user which protected branch you were on and what branch you created: "I'm on `develop`, so I'll create `feat/add-email-verification` for this."
-
-**If you're already on a feature branch**, skip this step entirely — just proceed to commit.
+Tell the user why you're switching and what branch you created: "The current branch `fix/login-redirect` doesn't match this work, so I'll create `feat/csv-export`."
 
 **If HEAD is detached** (not on any branch), warn the user and ask whether to create a branch or commit in place.
 
