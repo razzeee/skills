@@ -15,10 +15,25 @@ Creates a well-crafted git commit — inferring style, scope, and message qualit
 - Splits into multiple commits when the staged changes are clearly unrelated
 - Writes a body when the change warrants one (non-obvious bug fixes, refactors with tradeoffs, breaking changes)
 
+### `qlcplus`
+
+QLC+ (Q Light Controller Plus) lighting programming assistant for workspace files (`.qxw`), fixture definitions (`.qxf`), and show design/debugging workflows.
+
+**What it does:**
+- Helps with Scene, Chaser, Sequence, Collection, EFX, RGB Matrix, and Show Manager setup
+- Explains and troubleshoots HTP/LTP conflicts, fade behavior, crossfades, and timing drift
+- Guides Virtual Console design (Cue List, Solo Frame, sliders, button modes) and control strategy
+- Assists with fixture modes/heads, channel mapping, input-output plugins (DMX USB, Art-Net, E1.31, MIDI, OSC), and malformed/corrupted `.qxw` fixes
+- Provides practical timing checks and best-practice programming guidance for music-synced shows
+
 ## Install
 
 ```bash
 npx skills add razzeee/skills --skill commit
+```
+
+```bash
+npx skills add razzeee/skills --skill qlcplus
 ```
 
 Or install all skills:
