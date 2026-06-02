@@ -26,6 +26,17 @@ QLC+ (Q Light Controller Plus) lighting programming assistant for workspace file
 - Assists with fixture modes/heads, channel mapping, input-output plugins (DMX USB, Art-Net, E1.31, MIDI, OSC), and malformed/corrupted `.qxw` fixes
 - Provides practical timing checks and best-practice programming guidance for music-synced shows
 
+### `code-review`
+
+Reviews code changes (diffs, commits, branches, PRs) for bugs, structure issues, and unintentional behavior changes.
+
+**What it does:**
+- Automatically determines what to review based on input (uncommitted changes, commit hash, branch name, or PR)
+- Reads full file context around changes to avoid false positives
+- Focuses on bugs (logic errors, edge cases, security issues, broken error handling)
+- Flags structural issues, obvious performance problems, and potentially unintentional behavior changes
+- Provides actionable, severity-appropriate feedback without style nitpicking
+
 ## Install
 
 ```bash
