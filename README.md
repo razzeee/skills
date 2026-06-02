@@ -37,6 +37,18 @@ Reviews code changes (diffs, commits, branches, PRs) for bugs, structure issues,
 - Flags structural issues, obvious performance problems, and potentially unintentional behavior changes
 - Provides actionable, severity-appropriate feedback without style nitpicking
 
+### `flatpak-flathub`
+
+Creates complete, Flathub-ready Flatpak packages — manifest, MetaInfo, desktop file, README, and PR description.
+
+**What it does:**
+- Guides the full packaging workflow from gathering app info to submitting a Flathub PR
+- Generates correct manifests for multiple build systems (Meson, CMake, Cargo, npm/pnpm, pip, Go, .NET)
+- Writes AppStream MetaInfo XML that passes `flatpak-builder-lint`
+- Handles Electron apps (zypak, BaseApp), proprietary extra-data apps, and repackaging from Snap/AppImage
+- Covers plugin/extension addons, offline dependency generation, and sandbox permission configuration
+- Provides runtime selection guidance (GNOME 49, KDE 6.9, Freedesktop 25.08)
+
 ## Install
 
 ```bash
