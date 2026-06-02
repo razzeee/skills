@@ -59,6 +59,14 @@ npx skills add razzeee/skills --skill commit
 npx skills add razzeee/skills --skill qlcplus
 ```
 
+```bash
+npx skills add razzeee/skills --skill code-review
+```
+
+```bash
+npx skills add razzeee/skills --skill flatpak-flathub
+```
+
 Or install all skills:
 
 ```bash
