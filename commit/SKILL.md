@@ -17,6 +17,29 @@ git diff
 git diff --staged
 ```
 
+If the request or session context does not make the intended changes clear, do
+not guess. Inspect the available targets:
+
+```bash
+git status --short
+git branch --all
+git log --oneline -20
+```
+
+Ask the user what to compare and commit. Offer the relevant choices you found,
+such as:
+
+- All uncommitted changes
+- Only staged changes
+- Specific changed files or groups of related files
+- Changes since a named branch, tag, or commit
+- A specific commit or commit range
+- Another ref supplied by the user
+
+Show concrete branch names, commit hashes, and changed file groups in the
+choices. Allow the user to select one or more groups. Do not stage or commit
+anything until the user chooses.
+
 If nothing is staged, don't blindly stage everything. First look at what's changed and decide what actually belongs in a commit:
 
 - **Exclude** files that look like temporary edits, local experiments, environment config (`.env`, `*.local`, IDE settings), debug logging added during development, or anything unrelated to the work described in the session
