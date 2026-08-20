@@ -1,53 +1,53 @@
 # razzeee/skills
 
-A collection of agent skills for AI coding assistants.
+Agent skills for AI coding assistants.
 
 ## Skills
 
 ### `commit`
 
-Creates a well-crafted git commit — inferring style, scope, and message quality from the repo's own history rather than defaulting to conventional commits.
+Creates commits that match the repository's existing style instead of imposing conventional commits.
 
-**What it does:**
-- Reads `git log` to match the repo's existing commit style (conventional commits, plain prose, ticket prefixes, etc.)
-- Creates a feature branch automatically if you're on a protected branch (`main`, `master`, `develop`, `staging`, `release/*`)
-- Selectively stages files — excludes debug code, `.env` files, scratch files, and anything unrelated to the work; tells you what it left out
+**What it does**
+- Reads `git log` to identify the repository's commit style, including prose, prefixes, and ticket numbers
+- Creates a feature branch if the current branch is protected, such as `main`, `master`, `develop`, `staging`, or `release/*`
+- Stages only files related to the change and reports anything it leaves out
 - Splits into multiple commits when the staged changes are clearly unrelated
 - Writes a body when the change warrants one (non-obvious bug fixes, refactors with tradeoffs, breaking changes)
 
 ### `qlcplus`
 
-QLC+ (Q Light Controller Plus) lighting programming assistant for workspace files (`.qxw`), fixture definitions (`.qxf`), and show design/debugging workflows.
+Helps program QLC+ shows, edit workspace files (`.qxw`), and create fixture definitions (`.qxf`).
 
-**What it does:**
+**What it does**
 - Helps with Scene, Chaser, Sequence, Collection, EFX, RGB Matrix, and Show Manager setup
 - Explains and troubleshoots HTP/LTP conflicts, fade behavior, crossfades, and timing drift
-- Guides Virtual Console design (Cue List, Solo Frame, sliders, button modes) and control strategy
-- Assists with fixture modes/heads, channel mapping, input-output plugins (DMX USB, Art-Net, E1.31, MIDI, OSC), and malformed/corrupted `.qxw` fixes
-- Provides practical timing checks and best-practice programming guidance for music-synced shows
+- Guides Virtual Console setup for cue lists, solo frames, sliders, and button modes
+- Helps configure fixtures, map channels, set up input and output plugins, and repair malformed `.qxw` files
+- Checks timing for music-synced shows
 
 ### `code-review`
 
 Reviews code changes (diffs, commits, branches, PRs) for bugs, structure issues, and unintentional behavior changes.
 
-**What it does:**
-- Automatically determines what to review based on input (uncommitted changes, commit hash, branch name, or PR)
+**What it does**
+- Determines the review target from the input: uncommitted changes, a commit, a branch, or a pull request
 - Reads full file context around changes to avoid false positives
 - Focuses on bugs (logic errors, edge cases, security issues, broken error handling)
 - Flags structural issues, obvious performance problems, and potentially unintentional behavior changes
-- Provides actionable, severity-appropriate feedback without style nitpicking
+- Reports actionable findings by severity without style nitpicking
 
 ### `flatpak-flathub`
 
-Creates complete, Flathub-ready Flatpak packages — manifest, MetaInfo, desktop file, README, and PR description.
+Creates Flathub-ready Flatpak manifests, MetaInfo, desktop files, READMEs, and pull request descriptions.
 
-**What it does:**
+**What it does**
 - Guides the full packaging workflow from gathering app info to submitting a Flathub PR
 - Generates correct manifests for multiple build systems (Meson, CMake, Cargo, npm/pnpm, pip, Go, .NET)
 - Writes AppStream MetaInfo XML that passes `flatpak-builder-lint`
 - Handles Electron apps (zypak, BaseApp), proprietary extra-data apps, and repackaging from Snap/AppImage
 - Covers plugin/extension addons, offline dependency generation, and sandbox permission configuration
-- Provides runtime selection guidance (GNOME 49, KDE 6.9, Freedesktop 25.08)
+- Selects a current GNOME, KDE, or Freedesktop runtime
 
 ## Install
 

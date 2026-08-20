@@ -1,6 +1,6 @@
 ---
 name: qlcplus
-description: "QLC+ (Q Light Controller Plus) lighting software — workspace files (.qxw), scenes, chasers, sequences, collections, EFX, RGB matrices, fixture definitions (.qxf), Virtual Console, and timing calculations. Use this skill whenever the user is working with QLC+ workspace XML, creating/editing scenes/chasers/shows, debugging timing or crossfade issues, generating fixture definitions, setting up Virtual Console widgets (cue lists, solo frames, buttons, sliders), troubleshooting HTP/LTP conflicts, fixing corrupted .qxw files, configuring QLC+ plugins (DMX USB, Art-Net, MIDI, E1.31), or asking any question where QLC+ is the software being used. Also trigger for SpeedModes, FadeIn/Hold/Duration, FixtureVal, RunOrder, or QLC+ function types. Do NOT trigger for general DMX hardware questions without QLC+ context, fixture buying advice, DAW-only questions, or custom protocol implementations."
+description: "Helps with QLC+ workspace files (.qxw), scenes, chasers, sequences, collections, EFX, RGB matrices, fixture definitions (.qxf), Virtual Console, and timing calculations. Use for creating or editing QLC+ shows, debugging timing and crossfades, generating fixture definitions, configuring plugins, repairing corrupt workspaces, or troubleshooting HTP and LTP conflicts. Also trigger for SpeedModes, FadeIn, Hold, Duration, FixtureVal, RunOrder, and QLC+ function types. Do not trigger for general DMX hardware questions without QLC+ context, fixture buying advice, DAW-only questions, or custom protocol implementations."
 ---
 
 # QLC+ Lighting Programming Skill
@@ -22,7 +22,7 @@ You are helping with QLC+ (Q Light Controller Plus) v5 lighting automation. This
 | HTP (Highest Takes Precedence) | Intensity, dimmer, color intensity (R/G/B/W/A)    | Highest active value wins           |
 | LTP (Latest Takes Precedence)  | Pan, tilt, gobo, strobe, speed, all non-intensity | Most recently started function wins |
 
-HTP means two active scenes both setting a dimmer will show the higher value. LTP means the last-started function controls non-intensity channels — order matters, and unexpected jumps can occur.
+HTP uses the higher value when two active scenes set the same dimmer. LTP gives control of non-intensity channels to the function that started last. Start order matters and can cause unexpected jumps.
 
 During crossfades: HTP levels transition smoothly. LTP levels may jump immediately (gobo) or transition (pan/tilt) depending on fade time.
 
@@ -56,12 +56,12 @@ A Palette abstracts a fixture feature (color, position, zoom). Can be used in Sc
 A snapshot of channel values. Key properties:
 
 - **Selective channel control**: Only enabled channels are affected. Disabled channels are NEVER touched. This enables layering.
-- **Fade In**: Time to fade ALL channels (HTP AND LTP) to their target values. This is unique to Scenes — in other functions, Fade In only affects HTP.
-- **Fade Out**: Time to fade HTP/intensity channels back to zero. **ONLY HTP channels are affected by Fade Out** — LTP channels retain their values.
+- **Fade In**: Time to fade all HTP and LTP channels to their target values. Only scenes apply Fade In to LTP channels.
+- **Fade Out**: Time to fade HTP channels to zero. Fade Out does not affect LTP channels, which retain their values.
 - **No duration**: Scenes persist until stopped or overridden
 - Monolithic scenes (all channels enabled) work well for chaser-driven workflows where only one scene is active at a time
 - Partial scenes (only some channels) enable layering but require careful management
-- **Crossfade blending**: When a chaser transitions between two scenes, it calls `setBlendFunctionID` so the new scene reads starting values from the previous scene — enabling true crossfade without snapping.
+- **Crossfade blending**: When a chaser transitions between two scenes, it calls `setBlendFunctionID`. The new scene reads its starting values from the previous scene, which prevents snapping.
 
 ### Chaser
 
@@ -77,9 +77,9 @@ duration = fadeIn + hold
 - `hold = duration - fadeIn`
 - The step ends when `elapsed >= duration`
 - On step end, `prevStepRoundElapsed = elapsed % duration` carries overshoot into the next step (prevents timing drift)
-- **FadeOut is NOT included in duration** — it overlaps with the next step or runs after stop
+- **FadeOut is not included in duration**. It overlaps with the next step or runs after stop
 
-**SpeedModes (on Chaser element) — precise behavior from source:**
+**SpeedModes behavior from the source:**
 
 | Mode        | Meaning                                                                                                                                                            |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -87,7 +87,7 @@ duration = fadeIn + hold
 | **PerStep** | Each `<Step>` attribute is used directly                                                                                                                           |
 | **Default** | Passes `Function::defaultSpeed()` (sentinel value UINT_MAX-1) to the child function, meaning the child uses its OWN fade times. The chaser does not override them. |
 
-For Duration mode specifically: `Default` and `Common` behave identically — both use the chaser's `duration()`.
+In Duration mode, `Default` and `Common` both use the chaser's `duration()`.
 
 **Practical implications:**
 
@@ -103,7 +103,7 @@ For Duration mode specifically: `Default` and `Common` behave identically — bo
 
 ### Sequence
 
-A chaser bound to a single parent Scene — all steps control the same channels. Appears as a child of its parent Scene in the Function Manager.
+A sequence is a chaser bound to one parent scene. Every step controls the same channels, and the sequence appears under its parent scene in the Function Manager.
 
 **Sequence step values format** (inside `<Step Values="N">`):
 
@@ -137,7 +137,7 @@ Timeline-based function (Show Manager). Places functions on time tracks with pre
 
 **Show Manager key concepts:**
 
-- Multitrack view similar to a DAW — each track is bound to a Scene
+- Multitrack view similar to a DAW. Each track is bound to a Scene
 - Sequences on a track can only control channels of that track's Scene
 - Functions can be placed at precise time positions, dragged, copied
 - Supports BPM grid (4/4, 3/4, 2/2) with snap-to-grid for music sync
@@ -239,7 +239,7 @@ Direct channel control or playback fader (controls HTP intensity of a running fu
 - Steps through with Next/Previous/Play/Stop
 - Crossfade fader for manual transitions
 - Set step duration to infinite (∞) for manual crossfade control
-- Duration=0 causes frantic looping — always set explicit durations
+- Duration=0 causes rapid looping. Always set explicit durations
 
 ### Solo Frame
 
@@ -289,13 +289,13 @@ Input profiles map physical controller knobs/faders to QLC+ controls.
 
 ## Common Pitfalls
 
-1. **Hold="0" on sub-chaser steps** — causes them to be skipped entirely
-2. **SpeedModes FadeIn="PerStep" on main song chaser** — causes timing drift vs "Default"
-3. **Fade Out expects LTP channels to fade** — they don't; only HTP channels fade
-4. **Two scenes setting same LTP channel** — last-started wins, can cause unexpected jumps
-5. **Cue List with duration=0 steps** — frantic looping with no visible result
-6. **Forgetting channel enable/disable** — a scene with a channel disabled will never touch that channel, even if it looks like it should
-7. **HTP conflicts when layering monolithic scenes** — if both scenes set intensity, highest wins, not the "current" one
+1. **Hold="0" on sub-chaser steps:** QLC+ skips these steps entirely
+2. **SpeedModes FadeIn="PerStep" on a song chaser:** This can cause timing drift compared with `Default`
+3. **Expecting Fade Out to affect LTP channels:** Only HTP channels fade out
+4. **Two scenes setting the same LTP channel:** The scene started last wins, which can cause unexpected jumps
+5. **Cue List steps with duration=0:** These loop rapidly without a visible result
+6. **Forgetting channel enablement:** A scene never changes a disabled channel
+7. **Layering monolithic scenes:** When both scenes set intensity, the highest HTP value wins, not the value from the current scene
 
 ## Timing Calculations
 

@@ -1,7 +1,7 @@
 ---
 name: flatpak-flathub
 description: >
-  Creates complete, Flathub-ready Flatpak packages — manifest, MetaInfo,
+  Creates complete, Flathub-ready Flatpak packages: manifest, MetaInfo,
   desktop file, README, and PR description. Use whenever the user is packaging
   or submitting an app to Flatpak/Flathub: writing a manifest (app-id,
   finish-args, sdk-extensions, buildsystem), generating offline dependency
@@ -28,19 +28,19 @@ can be opened against the `new-pr` branch of `github.com/flathub/flathub`.
 
 ## Workflow overview
 
-1. **Gather information** — ask only what you cannot infer
-2. **Choose a runtime** — see Runtime selection below
-3. **Write the manifest** — `<AppID>.json` or `.yaml` at repo root
-4. **Write MetaInfo** — `<AppID>.metainfo.xml` inside the app source
-5. **Write the desktop file** — `<AppID>.desktop` inside the app source
+1. **Gather information:** Ask only what you cannot infer
+2. **Choose a runtime:** See Runtime selection below
+3. **Write the manifest:** Add `<AppID>.json` or `.yaml` at the repository root
+4. **Write MetaInfo:** Add `<AppID>.metainfo.xml` inside the app source
+5. **Write the desktop file:** Add `<AppID>.desktop` inside the app source
 6. **Add `flathub.json`** if architecture needs restricting
-7. **Write `.gitignore`** — always include
-8. **Write README.md** — build/lint/update instructions
-9. **Explain next steps** — local build, lint, PR instructions
+7. **Write `.gitignore`:** Always include this file
+8. **Write README.md:** Include build, lint, and update instructions
+9. **Explain next steps:** Cover local builds, linting, and pull requests
 
 ---
 
-## Step 1 — Gather information
+## Step 1: Gather information
 
 Ask (or infer from context) the following before writing anything:
 
@@ -62,7 +62,7 @@ look up yourself.
 
 ---
 
-## Step 2 — Application ID rules
+## Step 2: Application ID rules
 
 The ID must follow reverse-DNS format `{tld}.{vendor}.{product}` and these rules:
 
@@ -71,11 +71,11 @@ The ID must follow reverse-DNS format `{tld}.{vendor}.{product}` and these rules
 - Domain portion in lowercase; convert `-` to `_`; prefix digit-starting components with `_`
 - Must **not** end in `.desktop`, `.app`, `.linux`
 - GitHub/GitLab/Codeberg hosted → use `io.github.`, `io.gitlab.`, `page.codeberg.` prefix with at least 4 components
-- `org.gnome.`, `org.kde.`, `com.system76.` are protected — only official projects may use them
+- `org.gnome.`, `org.kde.`, and `com.system76.` are protected. Only official projects may use them
 
 ---
 
-## Step 3 — Runtime selection
+## Step 3: Runtime selection
 
 Pick the right runtime for the app's toolkit. Use the **current** stable versions below.
 
@@ -93,7 +93,7 @@ Pick the right runtime for the app's toolkit. Use the **current** stable version
 
 ---
 
-## Step 4 — The manifest
+## Step 4: The manifest
 
 The manifest must be named `<AppID>.json` (or `.yaml`) at the **top level** of
 the repository.
@@ -137,10 +137,10 @@ the repository.
 
 ### Key manifest rules
 
-- **All files stay in the packaging repo** — every `type: file` source path must
+- **Keep all files in the packaging repo.** Every `type: file` source path must
   be relative to the manifest file's directory. Never reference `../` or absolute
   paths outside the repo. The packaging repo is self-contained.
-- **No network during build** — `--share=network` in `build-args` does nothing;
+- **Do not use the network during builds.** `--share=network` in `build-args` does nothing;
   all sources must be declared with public URLs
 - Dependencies with package managers (cargo, npm, pip, go) need a pre-generated
   lockfile manifest; see `flatpak-builder-tools` at
@@ -186,12 +186,12 @@ wherever possible. Avoid `--device=all` unless absolutely necessary.
 
 ---
 
-## Step 5 — MetaInfo file
+## Step 5: MetaInfo file
 
 The MetaInfo file is written **in the packaging repo** alongside the manifest,
 then installed to `/app/share/metainfo/<AppID>.metainfo.xml` at build time via
 a `type: file` source entry. Never reference files outside the packaging repo
-directory — all paths in `type: file` sources must be relative to the manifest.
+directory. All paths in `type: file` sources must be relative to the manifest.
 
 It must pass `appstreamcli validate` (run via `flatpak-builder-lint appstream`).
 
@@ -273,10 +273,10 @@ It must pass `appstreamcli validate` (run via `flatpak-builder-lint appstream`).
 
 ---
 
-## Step 6 — Desktop file
+## Step 6: Desktop file
 
 The desktop file is written **in the packaging repo** alongside the manifest,
-then installed via a `type: file` source entry — same pattern as MetaInfo.
+then installed through a `type: file` source entry, using the same pattern as MetaInfo.
 
 ```ini
 [Desktop Entry]
@@ -295,10 +295,10 @@ Categories=Utility;
 
 ---
 
-## Step 7 — flathub.json
+## Step 7: flathub.json
 
 Flathub builds on both `x86_64` and `aarch64` by default. Only include this
-file if you need to **restrict** that — listing both arches is the same as
+file only to **restrict** the architectures. Listing both architectures is the same as
 omitting the file entirely.
 
 To build on one architecture only:
@@ -321,7 +321,7 @@ If the app builds fine on both architectures, **do not create `flathub.json`**.
 
 ---
 
-## Step 8 — Write .gitignore
+## Step 8: Write .gitignore
 
 Always create a `.gitignore` alongside the manifest:
 
@@ -335,7 +335,7 @@ These are the local build artefacts produced by `flatpak run org.flatpak.Builder
 
 ---
 
-## Step 9 — Write README.md
+## Step 9: Write README.md
 
 Always create a `README.md` in the same directory as the manifest. Tailor the
 content to whether the app is built from source or repackaged from a binary.
@@ -350,7 +350,7 @@ Flatpak packaging for [App Name](https://upstream-url).
 ## Requirements
 
 - [flatpak](https://flatpak.org/setup/)
-- [org.flatpak.Builder](https://flathub.org/apps/org.flatpak.Builder) — always
+- [org.flatpak.Builder](https://flathub.org/apps/org.flatpak.Builder). Always
   use the Flatpak-sandboxed builder, not a system `flatpak-builder`, to match
   the Flathub build environment
 
@@ -401,7 +401,7 @@ Flatpak repackaging for [App Name](https://upstream-url) (proprietary).
 ## Requirements
 
 - [flatpak](https://flatpak.org/setup/)
-- [org.flatpak.Builder](https://flathub.org/apps/org.flatpak.Builder) — always
+- [org.flatpak.Builder](https://flathub.org/apps/org.flatpak.Builder). Always
   use the Flatpak-sandboxed builder, not a system `flatpak-builder`, to match
   the Flathub build environment
 
@@ -449,7 +449,7 @@ limitations in the Flatpak sandbox, required D-Bus names, etc.).
 
 ---
 
-## Step 9 — Explain next steps to the user
+## Step 9: Explain next steps to the user
 
 After producing the files, always explain:
 
@@ -472,18 +472,18 @@ After producing the files, always explain:
    - Clone and check out the `new-pr` branch
    - Create a new branch from `new-pr`, add files, push, open PR **against `new-pr`** (not `master`)
    - PR title: `Add <AppID>`
-   - Fill in the PR description template — the PR body must address each checkbox:
+   - Fill in the PR description template. The PR body must address each checkbox:
      - A brief description of what the application does
      - A video showcasing the app running on Linux via Flatpak
      - Confirmation the App ID follows the naming rules
      - Confirmation you have read the submission requirements
-     - Your relationship to the project (author / upstream contributor / third-party packager) — if third-party, include a link showing you contacted upstream
+     - Your relationship to the project (author / upstream contributor / third-party packager). Third-party packagers must include a link showing they contacted upstream
 
 ---
 
-## Electron apps — runtime and launcher notes
+## Electron apps: runtime and launcher notes
 
-**All** Electron Flatpaks — whether source-built or extra-data repackages — must
+All Electron Flatpaks, whether source-built or extra-data repackages, must
 use `org.electronjs.Electron2.BaseApp` as the `base`. This provides zypak,
 Chromium's setuid sandbox shim, and other Electron runtime essentials. The
 `base-version` must match `runtime-version`.
@@ -503,9 +503,9 @@ zypak replaces Chromium's setuid sandbox with a Flatpak-compatible alternative.
 Every Electron Flatpak needs a launcher script that calls `zypak-wrapper` (or
 `zypak-wrapper.sh`). The key difference:
 
-- **`zypak-wrapper.sh`** — use for source-built apps where the Electron binary
+- Use **`zypak-wrapper.sh`** for source-built apps where the Electron binary
   is installed under `/app/main/` (e.g. from electron-builder output).
-- **`zypak-wrapper`** (no `.sh`) — use for extra-data apps where the binary
+- Use **`zypak-wrapper`** without `.sh` for extra-data apps where the binary
   lands in `/app/extra/` at user install time.
 
 Both forms require `TMPDIR` to be set to avoid Chromium crashes:
@@ -540,9 +540,9 @@ build-commands:
   - patch-electron-desktop-filename ${FLATPAK_DEST}/Element/resources/app.asar
 ```
 
-Known users: Element/Riot, Discord, Signal, Mattermost, GB Studio, Freelens.
-Slack uses the older `patch-desktop-filename` variant (same purpose, different
-command name — both are provided by the BaseApp).
+Known users: Element/Riot, Discord, Signal, Mattermost, GB Studio, and Freelens.
+Slack uses the older `patch-desktop-filename` command for the same purpose.
+The BaseApp provides both commands.
 
 You need this when:
 - The app is a pre-built Electron binary (tarball or extra-data), not source-built
@@ -554,14 +554,14 @@ You need this when:
 - Do **not** use `--no-sandbox` or `ELECTRON_DISABLE_SANDBOX=1` as a default.
   zypak handles the sandbox correctly for virtually all apps.
 - `ZYPAK_DISABLE_SANDBOX=1` is only needed for specific apps (e.g. Discord)
-  where zypak's sandbox causes crashes — treat it as a last resort and document
+  where zypak's sandbox causes crashes. Treat it as a last resort and document
   why it's needed.
 - `--allow=devel` in `finish-args` is sometimes needed for apps that use
   `ptrace` (e.g. VS Code's debugger). Only add it when actually required.
 
 ---
 
-## Proprietary apps — extra-data pattern
+## Proprietary apps: extra-data pattern
 
 Some apps cannot be legally bundled in the Flatpak itself (e.g. Spotify, Slack,
 VS Code, Zoom). For these, use `type: extra-data` sources: the binary is
@@ -573,8 +573,9 @@ build step only installs a small `apply_extra` script and the static assets
 ### Key rules for extra-data
 
 - Add `tags: [proprietary]` at the top of the manifest.
-- The `extra-data` source requires `filename`, `url`, `sha256`, and `size`
-  (in bytes). `size` must be exact — get it from `curl -sI <url> | grep -i content-length`.
+- The `extra-data` source requires `filename`, `url`, `sha256`, and `size`.
+  The size is measured in bytes and must be exact. Get it from
+  `curl -sI <url> | grep -i content-length`.
 - Each arch that needs a different binary gets its own `extra-data` source block
   with `only-arches: [x86_64]` / `only-arches: [aarch64]`.
 - The `apply_extra` script is executed at install time inside a sandbox. It
@@ -645,7 +646,7 @@ modules:
 ## Repackaging from Snap
 
 When the vendor only publishes a Snap, extract it with `unsquashfs` inside
-`apply_extra`. You need `squashfs-tools` available in the build environment —
+`apply_extra`. The build environment needs `squashfs-tools`, so
 include it from `shared-modules`:
 
 ```yaml
@@ -755,7 +756,7 @@ Some apps expose an **extension point** that lets separately packaged plugins
 install files into the host app's prefix. OBS Studio, LibreOffice macros, and
 GIMP plug-ins are common examples.
 
-### Parent app — declare the extension point
+### Parent app: declare the extension point
 
 Add an `add-extensions` block to the parent manifest and create the target
 directory in a post-install step:
@@ -815,7 +816,7 @@ modules:
 
 - `runtime` = the parent app ID (not a freedesktop/gnome/kde runtime)
 - `sdk` = the **same SDK** the parent app was built with (e.g. if the parent
-  uses `org.kde.Sdk//6.9`, the extension must too — using `org.freedesktop.Sdk`
+  uses `org.kde.Sdk//6.9`, the extension must too. Using `org.freedesktop.Sdk`
   will cause linker errors or ABI mismatches at runtime)
 - `build-extension: true` is mandatory
 - `prefix` must be a subdirectory of the parent's `directory` value (e.g.
@@ -873,7 +874,7 @@ Note: addon MetaInfo does **not** need `<launchable>`, `<screenshots>`, or
 
 ### Python
 
-Python 3 is included in all current runtimes (GNOME, KDE, Freedesktop) — no
+Python 3 is included in all current runtimes (GNOME, KDE, Freedesktop), so no
 `sdk-extensions` entry is needed for pure Python apps.
 
 #### Generating the Python dependency manifest
@@ -947,7 +948,7 @@ modules:
 ```
 
 **Regenerate whenever dependencies change.** Commit `python3-modules.json`
-alongside the manifest — it is a reproducible lockfile, not a generated
+alongside the manifest. It is a reproducible lockfile, not a generated
 artifact to be ignored.
 
 Add the following to the README's **Update** section whenever the app uses
@@ -1009,7 +1010,7 @@ modules:
       - cargo-sources.json
 ```
 
-**Manifest (meson buildsystem — meson manages CARGO_HOME):**
+**Manifest for Meson when Meson manages CARGO_HOME:**
 
 If `meson.build` sets `CARGO_HOME` itself (e.g. `cargo-home` under the build root), cargo won't
 find the generated config. Work around by copying it:
