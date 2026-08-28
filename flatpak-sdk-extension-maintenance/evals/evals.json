@@ -1,0 +1,52 @@
+{
+  "skill_name": "flatpak-sdk-extension-maintenance",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "In a temporary clone of https://github.com/flathub/org.freedesktop.Sdk.Extension.node24, use https://github.com/flathub/org.freedesktop.Sdk.Extension.node24/pull/44 as the reference update. Prepare every outdated branch/* branch through Node 24.20.0, but do not push or open PRs. Save a concise report plus one patch file per prepared target branch so I can inspect exactly what would be published.",
+      "expected_output": "A dry-run report inventories every branch/* ref, skips branch/25.08 as current, prepares branch/26.08 from the direct reference update, catches branch/24.08 up through the verified missing update chain, validates the changes, and publishes nothing.",
+      "files": [],
+      "expectations": [
+        "The output inventories exactly branch/24.08, branch/25.08, and branch/26.08 and does not target beta.",
+        "branch/24.08 is prepared with original commits b49f9d62acd6cb59dbc85209195b514269a0538f then 72d05933de199cdd17fc905da3f254c3d2791d20, while branch/26.08 uses only 72d05933de199cdd17fc905da3f254c3d2791d20.",
+        "branch/25.08 is skipped as already current at Node 24.20.0.",
+        "A non-empty patch is saved for each prepared branch and no patch is produced for the current branch.",
+        "Prepared results preserve target branch and runtime identity, end at Node 24.20.0, and include each required release entry exactly once in newest-first order.",
+        "The Node 24.20.0 archive is downloaded and matches SHA-256 2732fc3f588dd335cd6779c06864f7cd424bb1b5ff9a1743059a66c54f9ca4a1; manifest and XML checks pass.",
+        "No branch is pushed and no pull request is created or modified."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Audit https://github.com/flathub/org.freedesktop.Sdk.Extension.node24/pull/44 for a multi-branch rollout. Do not modify GitHub or the current checkout. Determine the exact cherry-pick chain each branch/* ref needs, identify branches that must be skipped, and save an actionable rollout report containing commit IDs, PR links, target bases, and the validation you would run before asking me to publish.",
+      "expected_output": "A repository-backed rollout analysis that uses original focused PR commits, finds a contiguous version chain rather than copying branch/25.08 wholesale, inventories all branch/* refs only, and includes a publication approval gate.",
+      "files": [],
+      "expectations": [
+        "The report audits all and only branch/24.08, branch/25.08, and branch/26.08, recording each target head or an equivalent immutable base identifier.",
+        "The exact oldest-first chain is b49f9d62acd6cb59dbc85209195b514269a0538f then 72d05933de199cdd17fc905da3f254c3d2791d20 for branch/24.08 and only 72d05933de199cdd17fc905da3f254c3d2791d20 for branch/26.08.",
+        "The report links predecessor PR #39 and reference PR #44, uses original update commits rather than merge commits, and excludes closed unmerged PR #38 from the chain.",
+        "branch/25.08 is skipped as already current, and branch/26.08 is recognized as intentionally using runtime-version 26.08beta rather than divergent.",
+        "The validation plan covers diff scope, branch identity, YAML/XML parsing, source checksum, release ordering and uniqueness, clean state, and unchanged remote target heads.",
+        "Local full Flatpak builds are not required before requesting publication approval; compilation is delegated to per-PR Flathub builds unless the user separately asks for local builds.",
+        "The report contains an explicit publication approval gate and the audit performs no GitHub or checkout mutation."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Using the supplied local git fixture, propagate the reference Flatpak dependency update to every branch/* branch by cherry-picking. One target has a manifest conflict because its runtime-version and build options differ. Resolve it without losing target-specific settings, prepare local commits and patches, validate the declared source checksum and release metadata, and stop before any push. Save a rollout report explaining the conflict resolution. Fixture setup instructions are in the input file.",
+      "expected_output": "All fixture branch/* targets are classified; outdated targets receive the verified update while runtime-specific settings survive the conflict, checksums and release history validate, and no remote publication occurs.",
+      "files": [
+        "evals/files/conflict-fixture.md"
+      ],
+      "expectations": [
+        "Exactly branch/24.08 is prepared; branch/25.08 and branch/26.08 are classified as already current.",
+        "The branch/24.08 result preserves branch 24.08, runtime-version 24.08, strip true, and prepend-path /usr/lib/sdk/example/bin while updating only release intent.",
+        "The declared local source archive exists and its measured SHA-256 equals the manifest checksum.",
+        "Release 1.1.0 dated 2026-02-02 and release 1.0.0 dated 2026-01-01 each appear exactly once in newest-first order, and XML parsing passes.",
+        "A non-empty patch and verifiable local git artifacts are saved for branch/24.08, with a clean completed repository.",
+        "The report accurately discloses whether Git naturally produced the fixture's predicted conflict and explains how target-specific settings were preserved.",
+        "No push, pull request, or GitHub mutation occurs."
+      ]
+    }
+  ]
+}

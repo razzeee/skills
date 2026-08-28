@@ -49,6 +49,17 @@ Creates Flathub-ready Flatpak manifests, MetaInfo, desktop files, READMEs, and p
 - Covers plugin/extension addons, offline dependency generation, and sandbox permission configuration
 - Selects a current GNOME, KDE, or Freedesktop runtime
 
+### `flatpak-sdk-extension-maintenance`
+
+Propagates dependency and release updates across versioned Flatpak SDK and SDK-extension branches.
+
+**What it does**
+- Inventories every maintained `branch/*` runtime branch and classifies it as current, behind, divergent, or already covered by a pull request
+- Builds a verified chain of original update commits for branches that are multiple releases behind
+- Prepares updates in isolated worktrees while preserving branch-specific runtime settings
+- Validates source checksums, manifests, release metadata, diff scope, and remote branch state
+- Requires explicit approval before pushing update branches or opening pull requests
+
 ## Install
 
 ```bash
@@ -65,6 +76,10 @@ npx skills add razzeee/skills --skill code-review
 
 ```bash
 npx skills add razzeee/skills --skill flatpak-flathub
+```
+
+```bash
+npx skills add razzeee/skills --skill flatpak-sdk-extension-maintenance
 ```
 
 Or install all skills:
