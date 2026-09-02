@@ -1,5 +1,5 @@
 {
-  "skill_name": "flatpak-c-conventions",
+  "skill_name": "glib-c-conventions",
   "evals": [
     {
       "id": 1,
@@ -14,14 +14,14 @@
     },
     {
       "id": 2,
-      "prompt": "Write a C function for Flatpak named checksum_payload() that receives a GBytes pointer, obtains its data with g_bytes_get_data(), and computes a uint32_t rolling checksum by iterating over every byte. Return only the complete function in solution.c, including any required standard headers.",
-      "expected_output": "A complete function using standard fixed-width types and size_t while retaining gsize where the GLib API requires a gsize output parameter.",
+      "prompt": "Write a C function for xdg-desktop-portal named checksum_payload() that receives a GBytes pointer, obtains its data with g_bytes_get_data(), and computes a uint32_t rolling checksum by iterating over every byte. Return only the complete function in solution.c, including any required standard headers.",
+      "expected_output": "A complete function using standard fixed-width types and size_t, including for the length returned by the GLib API.",
       "files": [],
       "expectations": [
         "The checksum and function return type use uint32_t and the byte data is accessed as uint8_t.",
         "The loop index is declared as size_t.",
-        "The length passed to g_bytes_get_data uses the GLib-compatible gsize type.",
-        "The output includes stdint.h and does not replace API-required GLib types blindly."
+        "The length passed to g_bytes_get_data is declared as size_t rather than gsize.",
+        "The output includes stdint.h and uses GLib types only where they carry meaning or are required for interface compatibility."
       ]
     },
     {
@@ -34,6 +34,18 @@
         "The public FlatpakProgressCallback signature retains guint progress.",
         "The callback invocation explicitly converts or validates the size_t index for the guint API boundary.",
         "The output does not mechanically replace all GLib integer typedefs."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Review and correct this new internal Mutter C helper according to project type conventions. It is not part of a public API. Return only corrected code in solution.c, including any required standard headers.\n\nstatic gint32\ncount_ascii_digits (const gchar *text, gsize text_len)\n{\n  gint32 count = 0;\n\n  for (gsize i = 0; i < text_len; i++)\n    if (text[i] >= '0' && text[i] <= '9')\n      count++;\n\n  return count;\n}",
+      "expected_output": "Corrected new internal code using standard C types rather than GLib aliases that add no meaning.",
+      "files": [],
+      "expectations": [
+        "The text parameter uses const char rather than const gchar.",
+        "The text length and loop index use size_t rather than gsize.",
+        "The count and return type use int32_t rather than gint32.",
+        "The output includes stdint.h and any header needed for size_t."
       ]
     }
   ]
