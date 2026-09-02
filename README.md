@@ -60,6 +60,15 @@ Propagates dependency and release updates across versioned Flatpak SDK and SDK-e
 - Validates source checksums, manifests, release metadata, diff scope, and remote branch state
 - Requires explicit approval before pushing update branches or opening pull requests
 
+### `flatpak-c-conventions`
+
+Applies Flatpak's C integer type conventions when writing, changing, or reviewing code in the Flatpak repository.
+
+**What it does**
+- Uses standard C integer types such as `size_t`, `uint8_t`, and `uint32_t` when appropriate
+- Uses `size_t` for array indexes, collection lengths, and related loop counters
+- Preserves GLib types where an API, signedness, width, or public interface requires them
+
 ## Install
 
 ```bash
@@ -80,6 +89,10 @@ npx skills add razzeee/skills --skill flatpak-flathub
 
 ```bash
 npx skills add razzeee/skills --skill flatpak-sdk-extension-maintenance
+```
+
+```bash
+npx skills add razzeee/skills --skill flatpak-c-conventions
 ```
 
 Or install all skills:

@@ -1,0 +1,40 @@
+{
+  "skill_name": "flatpak-c-conventions",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Write a C function for Flatpak named count_named_refs() that iterates over a GPtrArray of FlatpakDecomposed pointers, calls flatpak_decomposed_get_name(), and returns how many names equal a requested string. Return only the complete function in solution.c.",
+      "expected_output": "A complete function that uses size_t for the loop index and count rather than GLib integer typedefs.",
+      "files": [],
+      "expectations": [
+        "The loop index is declared as size_t.",
+        "The match count and function return type use size_t.",
+        "The output does not use a GLib integer typedef for the index or count."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Write a C function for Flatpak named checksum_payload() that receives a GBytes pointer, obtains its data with g_bytes_get_data(), and computes a uint32_t rolling checksum by iterating over every byte. Return only the complete function in solution.c, including any required standard headers.",
+      "expected_output": "A complete function using standard fixed-width types and size_t while retaining gsize where the GLib API requires a gsize output parameter.",
+      "files": [],
+      "expectations": [
+        "The checksum and function return type use uint32_t and the byte data is accessed as uint8_t.",
+        "The loop index is declared as size_t.",
+        "The length passed to g_bytes_get_data uses the GLib-compatible gsize type.",
+        "The output includes stdint.h and does not replace API-required GLib types blindly."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Review and correct this Flatpak C code according to project type conventions. The callback signature is part of an existing public API and must not change. Return only corrected code in solution.c.\n\ntypedef void (*FlatpakProgressCallback) (guint progress, gpointer user_data);\n\nstatic void\nreport_steps (GPtrArray *steps, FlatpakProgressCallback callback, gpointer user_data)\n{\n  for (guint i = 0; i < steps->len; i++)\n    callback (i, user_data);\n}",
+      "expected_output": "Corrected code using size_t for the loop while preserving the public guint callback parameter and converting safely at the call boundary.",
+      "files": [],
+      "expectations": [
+        "The loop index is declared as size_t.",
+        "The public FlatpakProgressCallback signature retains guint progress.",
+        "The callback invocation explicitly converts or validates the size_t index for the guint API boundary.",
+        "The output does not mechanically replace all GLib integer typedefs."
+      ]
+    }
+  ]
+}
