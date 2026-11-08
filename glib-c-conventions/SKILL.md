@@ -1,5 +1,8 @@
 ---
 name: glib-c-conventions
+metadata:
+  author: razzeee
+  source: https://github.com/razzeee/skills/tree/main/glib-c-conventions
 description: Apply C type conventions used in Mutter, xdg-desktop-portal, Flatpak, and similar GLib-based projects. Use whenever writing, editing, fixing, refactoring, or reviewing their C code, especially loops, array indexes, collection lengths, fixed-width integers, and GLib typedefs.
 ---
 

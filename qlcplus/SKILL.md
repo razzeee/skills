@@ -2,6 +2,9 @@
 name: qlcplus
 description: "Helps with QLC+ workspace files (.qxw), scenes, chasers, sequences, collections, EFX, RGB matrices, fixture definitions (.qxf), Virtual Console, and timing calculations. Use for creating or editing QLC+ shows, debugging timing and crossfades, generating fixture definitions, configuring plugins, repairing corrupt workspaces, or troubleshooting HTP and LTP conflicts. Also trigger for SpeedModes, FadeIn, Hold, Duration, FixtureVal, RunOrder, and QLC+ function types. Do not trigger for general DMX hardware questions without QLC+ context, fixture buying advice, DAW-only questions, or custom protocol implementations."
 compatibility: Targets QLC+ 5 workspace and fixture formats. Playback and visual verification require QLC+; static XML editing does not require the application.
+metadata:
+  author: razzeee
+  source: https://github.com/razzeee/skills/tree/main/qlcplus
 ---
 
 # QLC+ Lighting Programming Skill

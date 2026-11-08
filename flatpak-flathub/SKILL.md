@@ -1,5 +1,8 @@
 ---
 name: flatpak-flathub
+metadata:
+  author: razzeee
+  source: https://github.com/razzeee/skills/tree/main/flatpak-flathub
 description: >
   Creates Flathub-ready Flatpak manifests, MetaInfo, desktop files, READMEs,
   and pull request descriptions. Use when packaging or submitting an app to

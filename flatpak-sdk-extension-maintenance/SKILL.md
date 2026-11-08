@@ -1,5 +1,8 @@
 ---
 name: flatpak-sdk-extension-maintenance
+metadata:
+  author: razzeee
+  source: https://github.com/razzeee/skills/tree/main/flatpak-sdk-extension-maintenance
 description: >
   Maintains versioned Flatpak SDK and SDK-extension repositories by propagating
   a dependency or release update from a reference pull request across every

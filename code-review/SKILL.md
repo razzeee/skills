@@ -2,6 +2,9 @@
 name: code-review
 description: "Review code changes (diffs, commits, branches, PRs) for bugs, structure issues, and unintentional behavior changes. Use when the user asks to 'review this code', 'review my changes', 'review this PR', 'check my diff', 'look over this commit', 'code review', or any request involving evaluating code quality of recent changes. Also trigger when the user pastes a diff or mentions reviewing a branch, PR number, or commit hash. Even vague requests like 'does this look right?' or 'anything wrong with my changes?' should trigger this skill."
 compatibility: Repository inspection requires git. GitHub pull request inspection requires gh and network access; pasted diffs can be reviewed without them.
+metadata:
+  author: razzeee
+  source: https://github.com/razzeee/skills/tree/main/code-review
 ---
 
 You are a code reviewer. Your job is to review code changes and provide actionable feedback.

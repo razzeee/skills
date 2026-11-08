@@ -2,6 +2,9 @@
 name: commit
 description: "Creates git commits that match the repository's history instead of defaulting to conventional commits. Use this skill whenever the user wants to record changes in git, asks for a commit message, or indicates that the work is ready to wrap up."
 compatibility: Requires git and a local repository. Creating commits requires write access to the repository.
+metadata:
+  author: razzeee
+  source: https://github.com/razzeee/skills/tree/main/commit
 ---
 
 # Commit
