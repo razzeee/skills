@@ -33,8 +33,12 @@ example; Node versions and branches change independently.
 - For ARM/ARM64 electron-builder, source
   `flatpak-node/electron-builder-arch-args.sh` to set `$ELECTRON_BUILDER_ARCH_ARGS`.
 - For native addon ABI compatibility, use the generator's
-  `--electron-node-headers` option and set `npm_config_nodedir` to
-  `flatpak-node/node-gyp/electron-current` as supported by that generator version.
+  `--electron-node-headers` option. The default XDG layout puts headers under
+  `flatpak-node/cache/node-gyp/<electron-version>`. The path
+  `flatpak-node/node-gyp/electron-current` exists only with `--no-xdg-layout`.
+  Match cache settings and any `npm_config_nodedir` override to the generated
+  layout. Follow the [native dependency instructions](https://github.com/flatpak/flatpak-builder-tools/tree/master/node#node-gyp-and-native-dependencies)
+  for the rebuild tool in use.
 - Use specific D-Bus names rather than session-bus access.
 - Apply the Electron runtime and launcher guidance linked from `SKILL.md`.
 

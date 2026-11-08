@@ -30,7 +30,7 @@ flatpak install --user flathub <runtime>/<arch>/<branch>
 flatpak install --user flathub <sdk>/<arch>/<branch>
 
 # Build, export the repository for linting, and install
-flatpak run org.flatpak.Builder --user --install --repo=repo --force-clean builddir <AppID>.json
+flatpak run --command=flathub-build org.flatpak.Builder --install <AppID>.json
 
 # Run
 flatpak run <AppID>
@@ -77,7 +77,8 @@ flatpak install --user flathub org.flatpak.Builder
 flatpak install --user flathub org.freedesktop.Platform/<arch>/<branch>
 flatpak install --user flathub org.freedesktop.Sdk/<arch>/<branch>
 
-flatpak run org.flatpak.Builder --user --install --repo=repo --force-clean builddir <AppID>.json
+flatpak run --command=flathub-build org.flatpak.Builder <AppID>.json
+flatpak install --user ./repo <AppID>
 flatpak run <AppID>
 ```
 
@@ -103,3 +104,7 @@ flatpak run --command=flatpak-builder-lint org.flatpak.Builder repo repo
 
 For Python, Rust, Node, Go, or .NET dependencies, include the regeneration
 commands from the applicable language reference in the README's Update section.
+
+The binary recipe installs from the exported repository so Flatpak applies
+extra-data at install time. The build helper follows the
+[Flathub submission guide](https://docs.flathub.org/docs/for-app-authors/submission#build-and-install).

@@ -10,7 +10,7 @@ go install github.com/dennwc/flatpak-go-mod@latest
 flatpak-go-mod ./path/to/go/project
 ```
 
-This produces `go.mod.yaml` and `modules.txt`. Check the tool's current usage
+This produces `go.mod.yml` and `modules.txt`. Check the tool's current usage
 and run it against the directory containing `go.mod`.
 
 ## Manifest
@@ -32,11 +32,9 @@ modules:
       - type: git
         url: https://github.com/example/myapp
         commit: FULL_COMMIT_SHA
-      - type: file
-        path: modules.txt
-        dest: vendor
-      - go.mod.yaml
+      - go.mod.yml
 ```
 
 Set `GOBIN` so the executable is installed into the application prefix.
+The generated `go.mod.yml` already includes the `modules.txt` source.
 Regenerate whenever `go.mod` or `go.sum` changes and commit both generated files.

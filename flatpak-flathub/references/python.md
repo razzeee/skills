@@ -13,17 +13,19 @@ to resolve wheels and sdists into a source manifest.
 ```bash
 git clone https://github.com/flatpak/flatpak-builder-tools.git
 cd flatpak-builder-tools/pip
-pip install --user requirements-parser
+uv run flatpak-pip-generator.py --help
 ```
 
-Check the selected generator version's installation instructions and `--help`
-before running it. The commands below illustrate supported input forms; use
+Use `uv run` to install the script's declared dependencies, including
+`requirements-parser` and `packaging`. The script requires Python 3.10 or newer.
+Check its installation instructions and `--help` before running it.
+The commands below illustrate supported input forms; use
 the actual SDK branch selected for the application instead of the example `49`.
 
 From `requirements.txt`:
 
 ```bash
-./flatpak-pip-generator \
+uv run flatpak-pip-generator.py \
   --runtime org.gnome.Sdk//49 \
   --requirements-file requirements.txt \
   --output python3-modules
@@ -32,7 +34,7 @@ From `requirements.txt`:
 From `pyproject.toml`:
 
 ```bash
-./flatpak-pip-generator \
+uv run flatpak-pip-generator.py \
   --runtime org.gnome.Sdk//49 \
   --pyproject-file pyproject.toml \
   --output python3-modules
@@ -41,7 +43,7 @@ From `pyproject.toml`:
 For compiled packages where platform wheels are needed:
 
 ```bash
-./flatpak-pip-generator \
+uv run flatpak-pip-generator.py \
   --runtime org.gnome.Sdk//49 \
   --prefer-wheels=grpcio,cryptography \
   --requirements-file requirements.txt \
@@ -82,8 +84,7 @@ the manifest. Include the generation command in the README's Update section:
 
 ```bash
 git clone https://github.com/flatpak/flatpak-builder-tools.git
-pip install --user requirements-parser
-./flatpak-builder-tools/pip/flatpak-pip-generator \
+uv run flatpak-builder-tools/pip/flatpak-pip-generator.py \
   --runtime org.gnome.Sdk//49 \
   --requirements-file requirements.txt \
   --output python3-modules
