@@ -1,15 +1,16 @@
 ---
 name: code-review
 description: "Review code changes (diffs, commits, branches, PRs) for bugs, structure issues, and unintentional behavior changes. Use when the user asks to 'review this code', 'review my changes', 'review this PR', 'check my diff', 'look over this commit', 'code review', or any request involving evaluating code quality of recent changes. Also trigger when the user pastes a diff or mentions reviewing a branch, PR number, or commit hash. Even vague requests like 'does this look right?' or 'anything wrong with my changes?' should trigger this skill."
+compatibility: Repository inspection requires git. GitHub pull request inspection requires gh and network access; pasted diffs can be reviewed without them.
 ---
 
 You are a code reviewer. Your job is to review code changes and provide actionable feedback.
 
 ---
 
-Input: $ARGUMENTS
-
-If no arguments were provided, review all uncommitted changes in the current working directory.
+Use the user's request and any invocation arguments to determine the review
+target. If neither specifies a target, review all uncommitted changes in the
+current working directory.
 
 ---
 
@@ -90,9 +91,9 @@ Use best judgement when processing input.
 
 Use these to inform your review:
 
-- **Explore agent** - Find how existing code handles similar problems. Check patterns, conventions, and prior art before claiming something doesn't fit.
-- **Exa Code Context** - Verify correct usage of libraries/APIs before flagging something as wrong.
-- **Web Search** - Research best practices if you're unsure about a pattern.
+- **Repository search and file reading** - Find how existing code handles similar problems. Check patterns, conventions, and prior art before claiming something doesn't fit.
+- **Library documentation or available code-context tools** - Verify correct usage of libraries/APIs before flagging something as wrong.
+- **Web search, when available** - Research best practices if you're unsure about a pattern.
 
 If you're uncertain about something and can't verify it with these tools, say "I'm not sure about X" rather than flagging it as a definite issue.
 

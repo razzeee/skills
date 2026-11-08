@@ -1,11 +1,16 @@
 ---
 name: commit
 description: "Creates git commits that match the repository's history instead of defaulting to conventional commits. Use this skill whenever the user wants to record changes in git, asks for a commit message, or indicates that the work is ready to wrap up."
+compatibility: Requires git and a local repository. Creating commits requires write access to the repository.
 ---
 
 # Commit
 
 Create one or more commits that accurately describe what changed and why. Match the repository's existing style.
+
+If the user asks only for a commit message, inspect the relevant diff and
+repository conventions, then return the message without staging, switching
+branches, or creating a commit.
 
 ## Step 1: Understand the changes
 
@@ -48,7 +53,9 @@ If nothing is staged, don't blindly stage everything. First look at what's chang
 
 When unsure about a file, leave it out and tell the user why.
 
-Once you've decided what belongs, stage those files explicitly rather than using `git add -A`.
+Once you've decided what belongs, keep that file selection for the commit step.
+Check the branch before changing the index, then stage only the intended changes
+as described in Step 5.
 
 ## Step 1b: Decide whether to split into multiple commits
 
@@ -66,7 +73,8 @@ A single logical change belongs in a single commit. But if the staged changes cl
 
 **When it is ambiguous**, ask whether the user wants one commit or separate commits for the distinct changes.
 
-When splitting, commit each group separately: unstage the second group, commit the first, then stage and commit the second.
+Plan the groups here. After checking the branch, stage and commit each group
+separately in Step 5, keeping later groups out of the index until their turn.
 
 ## Step 2: Check the current branch
 
@@ -86,13 +94,15 @@ These branches should receive changes through pull requests, not direct commits:
 
 **2. The current branch has already been merged**
 
-Check whether the branch has been merged into the default branch:
+Resolve the remote default branch from `origin/HEAD`, then check whether the
+current branch has been merged into that ref:
 
 ```bash
-git branch --merged origin/main 2>/dev/null || git branch --merged origin/master 2>/dev/null
+git symbolic-ref --short refs/remotes/origin/HEAD
+git branch --merged <remote-default-ref>
 ```
 
-If the current branch appears in that list, it has already been merged. Create a new branch instead of adding commits to it.
+If the current branch appears in that list, it has already been merged. Create a new branch instead of adding commits to it. If the remote default ref is unavailable, inspect the repository's refs or ask rather than assuming its name.
 
 **3. The branch topic doesn't match the work**
 
@@ -153,6 +163,15 @@ Write a commit message that:
 Read the diff carefully and describe the behavior change, not just the filenames.
 
 ## Step 5: Commit
+
+For a staged-only request, preserve the existing index: do not run `git add`
+again on those files. A partially staged file may contain unrelated unstaged
+edits that must remain outside the commit.
+
+For other requests, stage only the intended changes. Stage whole files explicitly
+only when all their changes belong in the commit; otherwise stage the selected
+hunks while preserving existing staged content. Inspect `git diff --staged`
+before committing to confirm the index matches the requested scope.
 
 ```bash
 git commit -m "<subject>" -m "<body paragraph 1>" -m "<body paragraph 2>"
