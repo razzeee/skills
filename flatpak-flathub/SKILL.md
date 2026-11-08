@@ -4,8 +4,8 @@ metadata:
   author: razzeee
   source: https://github.com/razzeee/skills/tree/main/flatpak-flathub
 description: >
-  Helps with Flatpak packaging and Flathub requirements research and debugging.
-  Use when packaging or submitting an app to
+  Creates Flathub-ready Flatpak manifests, MetaInfo, desktop files, READMEs,
+  and pull request descriptions. Use when packaging or submitting an app to
   Flatpak/Flathub, configuring finish-args or SDK extensions, generating
   offline dependency sources, fixing Flathub linter errors, choosing a
   runtime, or preparing a submission PR. Covers Rust/Cargo, Python/Meson,
@@ -19,27 +19,10 @@ compatibility: Requires network access to verify upstream sources and current Fl
 
 # Flatpak / Flathub Packaging
 
-Help with Flatpak packaging, requirements, and build failures. Build with the
+Produce a complete, submission-ready Flatpak package. Build with the
 Flatpak-sandboxed `org.flatpak.Builder`, run its linter, and report which checks
-passed or could not run.
-
-## Flathub scope
-
-Check the current [Flathub AI policy](https://docs.flathub.org/docs/for-app-authors/requirements#generative-ai-policy)
-before producing material intended for Flathub. It prohibits AI-generated or
-AI-assisted manifests and AI-generated submission commit messages, PR
-descriptions, review comments, and replies. Agents must not open or automate
-submission PRs or provide submission reviews. The [exception policy](https://docs.flathub.org/docs/for-app-authors/linter#exception-policies)
-also prohibits LLM use to handle exception PRs.
-
-For Flathub, help with research, discussion, and debugging. Explain the findings
-so the maintainer can write the manifest and submission materials. Other
-generated material requires disclosure of the affected parts and approximate
-extent and remains subject to reviewer discretion. Research and debugging need
-no disclosure when no generated material enters the application or packaging.
-
-The generation steps and templates below apply to general Flatpak packaging.
-For Flathub tasks, use them as technical references within the scope above.
+passed or could not run. New application submissions target the `new-pr` branch
+of `github.com/flathub/flathub`.
 
 ## Workflow
 
@@ -49,7 +32,7 @@ For Flathub tasks, use them as technical references within the scope above.
 4. Supply MetaInfo, a desktop file, and icons.
 5. Add architecture restrictions only when needed, plus build documentation.
 6. Build, lint, and test the application.
-7. Explain the results and the applicable submission requirements.
+7. Explain the results and prepare the requested submission materials.
 
 ## 1. Gather information
 
@@ -211,18 +194,19 @@ not approve permissions. See [permission moderation](https://docs.flathub.org/do
 Report the files produced, build/lint results, runtime verification, and any
 remaining blockers. Provide commands for checks that could not run locally.
 
-Explain the human submission steps when requested:
+For a new application submission:
 
 1. Read the current Flathub submission requirements and PR template.
 2. Fork `github.com/flathub/flathub` with the `new-pr` branch available.
 3. Create the submission branch from `new-pr` and target `new-pr` in the PR.
-4. The maintainer writes the commit message and PR description, fills in the
-   current template, and opens the PR through GitHub's web interface. The title
-   format is `Add <AppID>`.
+4. Use the title `Add <AppID>` and fill in the current template with verified
+   details: what the app does, demonstration material requested by the template,
+   app ID compliance, and the submitter's relationship to upstream. Include
+   evidence of upstream contact for third-party packaging where required.
 
-Follow the [submission guide](https://docs.flathub.org/docs/for-app-authors/submission)
-and the Flathub scope above. Report a build, runtime test, or checklist item as
-passed only after verifying it.
+Prepare submission materials as requested; publish only with the user's
+authorization. Do not claim a build, runtime test, or checklist item passed
+unless it was verified.
 
 ## Upstream references
 
