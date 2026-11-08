@@ -5,6 +5,13 @@ When redistribution is not permitted, use `type: extra-data`: users download
 the binary at install time. The build installs `apply_extra`, launchers, and
 static metadata; the binary arrives during `flatpak install`.
 
+Flathub requires source-available apps and their runtime dependencies to be
+built from source unless reviewers grant an exception. A binary download alone
+does not justify repackaging. Upstream authors generally do not need extra-data
+when their submission grants redistribution permission. See the
+[license](https://docs.flathub.org/docs/for-app-authors/requirements#license) and
+[source-build requirements](https://docs.flathub.org/docs/for-app-authors/requirements#building-from-source).
+
 ## extra-data rules
 
 - Add `tags: [proprietary]` for proprietary applications.
@@ -88,8 +95,8 @@ When upstream only publishes a Snap, extract it with `unsquashfs` in
 
 ```yaml
 modules:
-  - shared-modules/squashfs-tools/squashfs-tools.json
   - shared-modules/lzo/lzo.json
+  - shared-modules/squashfs-tools/squashfs-tools.json
 
   - name: myapp
     buildsystem: simple

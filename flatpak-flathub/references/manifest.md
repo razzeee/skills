@@ -49,9 +49,15 @@ Replace the example runtime branch with a verified supported branch.
 - Package-manager dependencies need pre-generated offline sources. Use the
   applicable language reference linked from `SKILL.md` and
   [flatpak-builder-tools](https://github.com/flatpak/flatpak-builder-tools).
+- Flathub requires source-available apps and their runtime dependencies to be
+  built from source unless reviewers grant an exception. See the
+  [source-build requirement](https://docs.flathub.org/docs/for-app-authors/requirements#building-from-source).
 - Use the `shared-modules` git submodule for common dependencies such as
   `libayatana-appindicator`, `lua`, and `SDL_sound`.
-- Install license files to `$FLATPAK_DEST/share/licenses/$FLATPAK_ID/`.
+- Check builder's automatic installation of common license files. Install any
+  missing files under `$FLATPAK_DEST/share/licenses/$FLATPAK_ID/<module-name>/`
+  to avoid overwriting another module's license. See the
+  [license requirements](https://docs.flathub.org/docs/for-app-authors/requirements#installing-license-files).
 - Put the main app module last, and frequently changing modules last within
   their group, to reduce rebuild work.
 - Use `rename-icon`, `rename-desktop-file`, and `rename-appdata-file` when
@@ -85,5 +91,7 @@ Request only what the app needs:
 --own-name=org.mpris.MediaPlayer2.myapp
 ```
 
-Prefer `xdg-desktop-portal` for file access. Grant all-device access only when
-the application demonstrably needs it.
+Use portals where a suitable, ecosystem-supported portal covers the use case
+or can be implemented in the app. Flathub requires this unless reviewers grant
+an exception. Grant all-device access only when the app needs it. See the
+[permission requirements](https://docs.flathub.org/docs/for-app-authors/requirements#permissions).

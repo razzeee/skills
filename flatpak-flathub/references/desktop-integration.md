@@ -1,8 +1,8 @@
 # MetaInfo and desktop files
 
-Reuse upstream metadata when it is suitable. If supplying missing files in the
-packaging repository, keep them alongside the manifest and install them via
-repository-relative `type: file` sources. Install MetaInfo to
+Flathub requires metadata in the upstream project unless the app uses
+extra-data. For that exception, keep missing files alongside the manifest and
+install them via repository-relative `type: file` sources. Install MetaInfo to
 `/app/share/metainfo/<AppID>.metainfo.xml` and validate it with the builder's
 `flatpak-builder-lint appstream` command.
 
@@ -81,10 +81,10 @@ repository-relative `type: file` sources. Install MetaInfo to
 - Use direct screenshot image URLs pinned to a tag or commit.
 - Include actual release versions and dates, never future dates.
 - Generate OARS ratings at <https://hughsie.github.io/oars/generate.html>.
-- For unofficial proprietary packages, put a community-package notice first
-  in the description, for example:
-  `<p>This is a community package of APP NAME and is not officially supported by UPSTREAM NAME.</p>`
-  AppStream descriptions use XML markup, not Markdown emphasis.
+- Flathub's website supplies the community-package disclaimer; no extra
+  description paragraph is required for it.
+- AppStream descriptions use XML markup. Flathub also supports `**...**` around
+  an entire paragraph for [website-specific emphasis](https://docs.flathub.org/docs/for-app-authors/metainfo-guidelines#website-specific-formatting).
 
 ## Desktop file
 

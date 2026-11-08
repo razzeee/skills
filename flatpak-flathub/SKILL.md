@@ -4,8 +4,8 @@ metadata:
   author: razzeee
   source: https://github.com/razzeee/skills/tree/main/flatpak-flathub
 description: >
-  Creates Flathub-ready Flatpak manifests, MetaInfo, desktop files, READMEs,
-  and pull request descriptions. Use when packaging or submitting an app to
+  Helps with Flatpak packaging and Flathub requirements research and debugging.
+  Use when packaging or submitting an app to
   Flatpak/Flathub, configuring finish-args or SDK extensions, generating
   offline dependency sources, fixing Flathub linter errors, choosing a
   runtime, or preparing a submission PR. Covers Rust/Cargo, Python/Meson,
@@ -19,10 +19,27 @@ compatibility: Requires network access to verify upstream sources and current Fl
 
 # Flatpak / Flathub Packaging
 
-Produce a complete, submission-ready Flatpak package. Build with the
+Help with Flatpak packaging, requirements, and build failures. Build with the
 Flatpak-sandboxed `org.flatpak.Builder`, run its linter, and report which checks
-passed or could not run. New application submissions target the `new-pr` branch
-of `github.com/flathub/flathub`.
+passed or could not run.
+
+## Flathub scope
+
+Check the current [Flathub AI policy](https://docs.flathub.org/docs/for-app-authors/requirements#generative-ai-policy)
+before producing material intended for Flathub. It prohibits AI-generated or
+AI-assisted manifests and AI-generated submission commit messages, PR
+descriptions, review comments, and replies. Agents must not open or automate
+submission PRs or provide submission reviews. The [exception policy](https://docs.flathub.org/docs/for-app-authors/linter#exception-policies)
+also prohibits LLM use to handle exception PRs.
+
+For Flathub, help with research, discussion, and debugging. Explain the findings
+so the maintainer can write the manifest and submission materials. Other
+generated material requires disclosure of the affected parts and approximate
+extent and remains subject to reviewer discretion. Research and debugging need
+no disclosure when no generated material enters the application or packaging.
+
+The generation steps and templates below apply to general Flatpak packaging.
+For Flathub tasks, use them as technical references within the scope above.
 
 ## Workflow
 
@@ -32,7 +49,7 @@ of `github.com/flathub/flathub`.
 4. Supply MetaInfo, a desktop file, and icons.
 5. Add architecture restrictions only when needed, plus build documentation.
 6. Build, lint, and test the application.
-7. Explain the results and prepare the requested submission materials.
+7. Explain the results and the applicable submission requirements.
 
 ## 1. Gather information
 
@@ -49,9 +66,10 @@ Infer these from the repository and upstream sources; ask only about gaps:
 | Developer name, contact URL, SPDX license | MetaInfo |
 | Supported architectures | Whether `flathub.json` is needed |
 
-Check whether upstream already supplies suitable MetaInfo, desktop files, and
-icons. Reuse them when possible. When supplying missing files in the packaging
-repository, install them via repository-relative `type: file` sources.
+Check whether upstream supplies suitable MetaInfo, desktop files, and icons.
+Flathub requires these files upstream unless the app uses extra-data. For that
+exception, install packaging-local files via repository-relative `type: file`
+sources. See the [metadata requirements](https://docs.flathub.org/docs/for-app-authors/requirements#required-metadata).
 
 ## 2. Application ID and runtime
 
@@ -61,7 +79,8 @@ The application ID follows reverse-DNS format `{tld}.{vendor}.{product}`:
 - Use `[A-Za-z0-9_]` in each component; a dash is allowed only in the last component.
 - Use lowercase for the domain; convert dashes to underscores and prefix digit-starting components with `_`.
 - Do not end the ID in `.desktop`, `.app`, or `.linux`.
-- GitHub/GitLab/Codeberg projects use `io.github.`, `io.gitlab.`, or `page.codeberg.` with at least 4 components.
+- Code-hosting IDs for GitHub, GitLab, Codeberg, and Framagit use `io.github.`, `io.gitlab.`, `page.codeberg.`, and `io.frama.` with at least 4 components. SourceForge allows `io.sourceforge.` or `net.sourceforge.`.
+- Verify control of the related domain or repository and that its URL is reachable. Follow the [domain and repository rules](https://docs.flathub.org/docs/for-app-authors/requirements#control-over-domain-or-repository).
 - Protected namespaces such as `org.gnome.`, `org.kde.`, and `com.system76.` are for official projects.
 
 Choose the runtime for the toolkit:
@@ -76,7 +95,9 @@ Verify supported branches against the [Flathub runtime documentation](https://do
 and available runtime refs before selecting one. Match the app's toolkit version,
 SDK extensions, and BaseApp to that runtime. GNOME and KDE version numbers differ
 from their underlying Freedesktop SDK branch. Use a supported branch, not an EOL
-one. If current support cannot be verified, report that gap.
+one. New Flathub submissions require the latest hosted runtime version. Check
+that SDK extensions and BaseApps are supported too. If current support cannot
+be verified, report that gap.
 
 Version numbers in the reference templates are examples, not a list of current
 releases. Replace them consistently after checking support and compatibility.
@@ -154,13 +175,15 @@ Use the sandboxed builder to match Flathub's environment:
 ```bash
 flatpak remote-add --if-not-exists --user flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 flatpak install --user flathub org.flatpak.Builder
-flatpak run org.flatpak.Builder --user --install --install-deps-from=flathub --repo=repo --force-clean builddir <AppID>.json
+flatpak run --command=flathub-build org.flatpak.Builder --install <AppID>.json
 flatpak run <AppID>
 flatpak run --command=flatpak-builder-lint org.flatpak.Builder manifest <AppID>.json
 flatpak run --command=flatpak-builder-lint org.flatpak.Builder repo repo
 ```
 
-The build exports to `repo` so the repository lint command has an actual target.
+The helper exports to `repo` and sets Flathub's build and media-mirroring options.
+For extra-data, omit `--install` and install from the exported repository with
+`flatpak install --user ./repo <AppID>` so installation applies the extra data.
 Use the manifest's real filename, including `.yaml` when appropriate.
 
 ### Linter errors quick guide
@@ -168,35 +191,38 @@ Use the manifest's real filename, including `.yaml` when appropriate.
 | Error | Fix |
 |---|---|
 | `appstream-metainfo-missing` | Install MetaInfo to `/app/share/metainfo/<AppID>.metainfo.xml` |
-| `finish-args-contains-both-x11-and-fallback-x11` | Keep only `--socket=fallback-x11` plus `--socket=wayland` |
+| `finish-args-contains-both-x11-and-fallback` | Keep only `--socket=fallback-x11` plus `--socket=wayland` |
 | Bare `--socket=x11` | Prefer fallback-x11 plus Wayland when the app supports Wayland |
-| License not installed | Install the module's license under `${FLATPAK_DEST}/share/licenses/${FLATPAK_ID}/` |
+| License not installed | Check builder's automatic license installation; install missing files in a module-specific directory under `${FLATPAK_DEST}/share/licenses/${FLATPAK_ID}/` |
 | `finish-args-arbitrary-dbus-access` | Replace session-bus access with specific `--talk-name=` / `--own-name=` |
-| `finish-args-has-nodevices` | Check requested device permissions; prefer narrower access over `--device=all` |
+| `finish-args-has-nodevice-<device>` | Remove the explicit `--nodevice=<device>` entry; request only the device access the app needs |
 | `module-buildsystem-is-plain-cmake` | Use `cmake-ninja` |
 | `desktop-file-icon-not-installed` | Install an AppID-named icon in the appropriate hicolor directory |
 
 Look up unfamiliar or changed diagnostics in the
 [linter documentation](https://docs.flathub.org/docs/for-app-authors/linter).
 
+Flathub reviews permissions separately through its `flathub/permissions` check.
+Passing lint, receiving a linter exception, or receiving a GitHub approval does
+not approve permissions. See [permission moderation](https://docs.flathub.org/docs/for-app-authors/linter#permissions-and-moderation).
+
 ## 7. Explain next steps
 
 Report the files produced, build/lint results, runtime verification, and any
 remaining blockers. Provide commands for checks that could not run locally.
 
-For a new application submission:
+Explain the human submission steps when requested:
 
 1. Read the current Flathub submission requirements and PR template.
 2. Fork `github.com/flathub/flathub` with the `new-pr` branch available.
 3. Create the submission branch from `new-pr` and target `new-pr` in the PR.
-4. Use the title `Add <AppID>` and fill in the current template with verified
-   details: what the app does, demonstration material requested by the template,
-   app ID compliance, and the submitter's relationship to upstream. Include
-   evidence of upstream contact for third-party packaging where required.
+4. The maintainer writes the commit message and PR description, fills in the
+   current template, and opens the PR through GitHub's web interface. The title
+   format is `Add <AppID>`.
 
-Prepare submission materials as requested; publish only with the user's
-authorization. Do not claim a build, runtime test, or checklist item passed
-unless it was verified.
+Follow the [submission guide](https://docs.flathub.org/docs/for-app-authors/submission)
+and the Flathub scope above. Report a build, runtime test, or checklist item as
+passed only after verifying it.
 
 ## Upstream references
 

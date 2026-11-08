@@ -53,8 +53,9 @@ build-commands:
   - patch-electron-desktop-filename ${FLATPAK_DEST}/Element/resources/app.asar
 ```
 
-The BaseApp also provides the older `patch-desktop-filename` command used by
-some manifests. Check the selected BaseApp's supported commands.
+Older BaseApp branches such as `25.08` also provide `patch-desktop-filename`.
+The `26.08` source branch provides only `patch-electron-desktop-filename`.
+Check the selected BaseApp's commands before using either name.
 
 Patching is relevant when a pre-built app uses Electron desktop integration
 and upstream did not build its `.asar` with the Flatpak app ID. Extra-data
