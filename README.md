@@ -26,17 +26,6 @@ Helps program QLC+ shows, edit workspace files (`.qxw`), and create fixture defi
 - Helps configure fixtures, map channels, set up input and output plugins, and repair malformed `.qxw` files
 - Checks timing for music-synced shows
 
-### `code-review`
-
-Reviews code changes (diffs, commits, branches, PRs) for bugs, structure issues, and unintentional behavior changes.
-
-**What it does**
-- Determines the review target from the input: uncommitted changes, a commit, a branch, or a pull request
-- Reads full file context around changes to avoid false positives
-- Focuses on bugs (logic errors, edge cases, security issues, broken error handling)
-- Flags structural issues, obvious performance problems, and potentially unintentional behavior changes
-- Reports actionable findings by severity without style nitpicking
-
 ### `flatpak-flathub`
 
 Creates Flathub-ready Flatpak manifests, MetaInfo, desktop files, READMEs, and pull request descriptions.
@@ -77,10 +66,6 @@ npx skills add razzeee/skills --skill commit
 
 ```bash
 npx skills add razzeee/skills --skill qlcplus
-```
-
-```bash
-npx skills add razzeee/skills --skill code-review
 ```
 
 ```bash

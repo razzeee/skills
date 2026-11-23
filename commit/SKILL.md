@@ -1,7 +1,7 @@
 ---
 name: commit
-description: "Creates git commits that match the repository's history instead of defaulting to conventional commits. Use this skill whenever the user wants to record changes in git, asks for a commit message, or indicates that the work is ready to wrap up."
-compatibility: Requires git and a local repository. Creating commits requires write access to the repository.
+description: "Write commits in the repository's style. Use when the user asks to commit changes, amend or squash commits, rework branch history, draft a commit message, or wrap up the work."
+compatibility: Requires git, a local repository, and the unslop skill. Creating commits requires write access to the repository.
 metadata:
   author: razzeee
   source: https://github.com/razzeee/skills/tree/main/commit
@@ -9,204 +9,102 @@ metadata:
 
 # Commit
 
-Create one or more commits that accurately describe what changed and why. Match the repository's existing style.
-
-Invoke the `unslop` skill for all prose you write during this workflow, from
-questions and updates to each commit subject, body, and final summary. Apply
-it before sending the text or recording the commit. Preserve exact refs,
+Explain why the work was needed. Invoke `unslop` for all prose, including
+questions, commit messages, and the final summary. Preserve exact refs,
 trailers, and repository formatting.
 
-If the user asks only for a commit message, inspect the relevant diff and
-repository conventions, then return the message without staging, switching
-branches, or creating a commit.
+For a message-only request, inspect the relevant diff, follow **Write the
+message**, and return the text without switching branches, staging, or committing.
 
-## Step 1: Understand the changes
+## Choose the scope
 
-Run these in parallel:
-
-```bash
-git status
-git diff
-git diff --staged
-```
-
-If the request or session context does not make the intended changes clear, do
-not guess. Inspect the available targets:
+From the repository root, run these in parallel. Use the same diff options
+for later scope checks.
 
 ```bash
-git status --short
-git branch --all
-git log --oneline -20
+git status --long --untracked-files=all
+git diff --no-relative --ignore-submodules=none
+git diff --staged --no-relative --ignore-submodules=none
 ```
 
-Ask the user what to compare and commit. Offer the relevant choices you found,
-such as:
+If `git status` reports an operation in progress, including `git am`, ask
+before switching branches, splitting groups, or committing. If the user
+asked to continue the operation, use its continuation command.
 
-- All uncommitted changes
-- Only staged changes
-- Specific changed files or groups of related files
-- Changes since a named branch, tag, or commit
-- A specific commit or commit range
-- Another ref supplied by the user
+For an explicit amend, squash, or history-rework request, rewrite only the
+topic's commits since its base. Amend the topic tip, squash the topic into
+one commit, or regroup its commits by purpose for a history rework. Never
+amend the base. Skip the rewrite if the history already matches the request.
+For a history-only rewrite, verify that the old and new tip trees match.
+When pushing a rewritten topic, use a lease pinned to the inspected remote tip.
 
-Show concrete branch names, commit hashes, and changed file groups in the
-choices. Allow the user to select one or more groups. Do not stage or commit
-anything until the user chooses.
+Use the request and current conversation to identify the intended changes.
+Leave unrelated or uncertain files out and tell the user why. If the scope
+is unclear, offer concrete choices from the changed files, refs, or commit
+ranges and wait for the user to choose.
 
-If nothing is staged, don't blindly stage everything. First look at what's changed and decide what actually belongs in a commit:
+Honor the user's commit count, groups, and order. If the user asks to commit
+what's staged, make one commit unless they request or confirm a split.
+When grouping is up to you, keep a change with its tests and documentation.
+Split changes that a maintainer could revert separately. Ask if the grouping is unclear. Keep
+shared-file hunks together unless the user assigns them to separate commits.
 
-- **Exclude** files that look like temporary edits, local experiments, environment config (`.env`, `*.local`, IDE settings), debug logging added during development, or anything unrelated to the work described in the session
-- **Include** the files that form the logical change and make sense together in the diff
-- Use session context to guide this: if the user described what they were working on, the commit should reflect that work, not everything `git status` happens to show
+## Check the branch
 
-When unsure about a file, leave it out and tell the user why.
+Check `git branch --show-current` before staging. If HEAD is detached, ask
+whether to create a branch or commit in place. Keep a suitable topic branch.
+Create a new one for work on a protected, default, integration, or release
+branch, or when the current branch describes a different task.
 
-Once you've decided what belongs, keep that file selection for the commit step.
-Check the branch before changing the index, then stage only the intended changes
-as described in Step 5.
+For decisions that depend on the default branch, verify its name and tip
+with the host or `git ls-remote --symref origin HEAD`. Fetch the branch if
+the tracking ref is stale. For a local-only repository, check its configured
+default. If you cannot verify the default, ask before switching branches.
 
-## Step 1b: Decide whether to split into multiple commits
+If you suspect the current topic branch has already merged, follow
+[Check a suspected merge](references/merged-topic.md) before switching.
+For other branch switches, create the new branch from HEAD with
+`git checkout -b <branch-name>`. Match existing branch names or use a short
+kebab-case name. Tell the user which branch you created and why.
 
-A single logical change belongs in a single commit. But if the staged changes clearly contain multiple unrelated things, splitting them produces a cleaner history.
+## Write the message
 
-**Split when:**
-- The changes address distinct concerns that could be reverted independently (e.g. a bug fix in `auth.js` + an unrelated dependency bump in `package.json`)
-- The diff spans files from different parts of the codebase with no connection between them
-- The session context suggests separate tasks were completed (e.g. "I fixed the login bug and also added the export feature")
+Read the repository's contribution instructions and commit template, if
+present. Inspect complete messages with `git log -20 --format='%B%n---'`
+for subject style, body format, and trailers. Follow explicit requirements
+first, then established conventions. Without history or a required format,
+use plain imperative prose.
 
-**Don't split when:**
-- The changes work together as one unit (e.g. a new feature file + its test + a README update)
-- The changes are small and the split would be pedantic
-- You would have to stage parts of files to separate the changes cleanly
+Use the current conversation to understand why the user wanted the work.
+If the reason is still unclear, ask. Leave the change list to the diff.
+Mention a surprising change only when it helps explain the reason.
 
-**When it is ambiguous**, ask whether the user wants one commit or separate commits for the distinct changes.
+- **Subject:** State the reason from the user's perspective when it involves
+  a user goal, problem, or tradeoff. For example: "Avoid making users reapply
+  search filters". Keep it within 72 characters unless the repository says
+  otherwise. If the subject format leaves no room for the reason, use the body.
+- **Body:** Explain motivation or tradeoffs the diff cannot show. Include a
+  body when readers need context, such as migration instructions, or when the
+  repository requires one. Separate it from the subject with a blank line
+  and wrap at about 72 characters unless the repository uses another format.
 
-Plan the groups here. After checking the branch, stage and commit each group
-separately in Step 5, keeping later groups out of the index until their turn.
+## Commit and verify
 
-## Step 2: Check the current branch
+Before staging, check whether the index contains changes outside the agreed
+groups. If so, leave it intact and ask how to handle them. For staged-only
+requests, use the existing index. Staging a partially staged file again can
+include edits the user left out. Otherwise, stage only the current group's
+files or hunks.
 
-```bash
-git branch --show-current
-git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null || echo "no remote default"
-```
+If the index contains multiple approved groups, use
+[Split staged changes](references/staged-split.md). If the staged diff
+already matches one complete group and the order is flexible, commit it first.
 
-Before committing, decide whether the current branch is the right place for this work. There are three situations that call for a new branch:
+For every commit, inspect the staged diff in the index you will commit.
+When it matches the approved group, save its tree ID with `git write-tree`.
+Commit without path arguments. After success, compare `git rev-parse 'HEAD^{tree}'`
+with the saved ID. If they differ, report the difference and stop before
+adjusting the index or creating another commit.
 
-**1. You're on a protected/shared branch**
-
-These branches should receive changes through pull requests, not direct commits:
-- The repo's default branch (`main`, `master`, or whatever `origin/HEAD` points to)
-- Common integration branches: `develop`, `dev`, `staging`, `next`
-- Release branches matching patterns like `release/*`, `release-*`
-
-**2. The current branch has already been merged**
-
-Resolve the remote default branch from `origin/HEAD`, then check whether the
-current branch has been merged into that ref:
-
-```bash
-git symbolic-ref --short refs/remotes/origin/HEAD
-git branch --merged <remote-default-ref>
-```
-
-If the current branch appears in that list, it has already been merged. Create a new branch instead of adding commits to it. If the remote default ref is unavailable, inspect the repository's refs or ask rather than assuming its name.
-
-**3. The branch topic doesn't match the work**
-
-Compare the current branch name to what the user is actually working on. If you're on `fix/login-redirect` but the user just finished building the CSV export feature, that branch is the wrong home for this commit. Create a new branch that reflects the actual work.
-
-Use the session context to decide whether the branch name still describes the work.
-
----
-
-In all three cases, name the new branch by first checking existing conventions:
-
-```bash
-git branch -a
-```
-
-Common patterns: `feat/add-login`, `fix/null-pointer`, `username/short-description`, `TICKET-123-description`. Match what you see. If there's no clear pattern, use a short kebab-case description of the change.
-
-Create and switch before staging or committing anything:
-
-```bash
-git checkout -b <branch-name>
-```
-
-Tell the user why you're switching and what branch you created: "The current branch `fix/login-redirect` doesn't match this work, so I'll create `feat/csv-export`."
-
-**If HEAD is detached** (not on any branch), warn the user and ask whether to create a branch or commit in place.
-
-## Step 3: Learn the repo's commit style
-
-Look at recent commits to understand the conventions this repo uses:
-
-```bash
-git log --oneline -20
-```
-
-Things to observe:
-- **Subject line format**: Is there a type prefix like `feat:` or `fix(`scope`)`? Or is it plain prose? Or ticket numbers like `[PROJ-123]`?
-- **Capitalization**: Sentence case, title case, or lowercase?
-- **Tense**: Imperative ("add feature"), past tense ("added feature"), or present ("adds feature")?
-- **Length**: How long are subject lines typically?
-- **Body**: Do commits have bodies? Are they common or rare? What do they contain?
-- **Footers**: Any patterns like `Refs:`, `Closes #123`, `BREAKING CHANGE:`?
-
-If the repository has a `CONTRIBUTING.md`, `docs/contributing.md`, or `.gitmessage` file, read it for explicit conventions.
-
-Match what you find. Don't impose a different convention. If the repo uses plain prose with no prefix, don't add `feat:`. If it uses conventional commits, follow the type vocabulary you see in the history.
-
-If the repo has no commits yet, default to plain imperative prose (no type prefix).
-
-## Step 4: Compose the message
-
-Write a commit message that:
-
-1. **Subject line:** One line of no more than 72 characters that matches the repository's style and summarizes what changed.
-2. **Blank line:** Separates the subject from the body when a body is present.
-3. **Body:** Explain why the change was made, relevant tradeoffs, and context that is not clear from the diff. Wrap it at about 72 characters. Omit it for small, self-explanatory changes.
-
-Read the diff carefully and describe the behavior change, not just the filenames.
-
-## Step 5: Commit
-
-For a staged-only request, preserve the existing index: do not run `git add`
-again on those files. A partially staged file may contain unrelated unstaged
-edits that must remain outside the commit.
-
-For other requests, stage only the intended changes. Stage whole files explicitly
-only when all their changes belong in the commit; otherwise stage the selected
-hunks while preserving existing staged content. Inspect `git diff --staged`
-before committing to confirm the index matches the requested scope.
-
-```bash
-git commit -m "<subject>" -m "<body paragraph 1>" -m "<body paragraph 2>"
-```
-
-Or use a heredoc if the message is long:
-
-```bash
-git commit -F - <<'EOF'
-<subject>
-
-<body>
-EOF
-```
-
-## Step 6: Confirm
-
-Show the result. For a single commit:
-
-```bash
-git show --stat HEAD
-```
-
-For multiple commits:
-
-```bash
-git log --oneline -<N>
-```
-
-Tell the user what was committed and provide each commit hash. If you split the work, briefly explain why.
+Confirm the result with `git show --stat HEAD` or `git log --oneline -<N>`
+for multiple commits. Report each hash and briefly explain any split.
