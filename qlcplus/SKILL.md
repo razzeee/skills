@@ -1,7 +1,7 @@
 ---
 name: qlcplus
-description: "Helps with QLC+ workspace files (.qxw), scenes, chasers, sequences, collections, EFX, RGB matrices, fixture definitions (.qxf), Virtual Console, and timing calculations. Use for creating or editing QLC+ shows, reviewing cues and blackouts, debugging timing and crossfades, generating fixture definitions, configuring plugins, repairing corrupt workspaces, or troubleshooting HTP and LTP conflicts. Also trigger for SpeedModes, FadeIn, Hold, Duration, FixtureVal, RunOrder, and QLC+ function types. Do not trigger for general DMX hardware questions without QLC+ context, fixture buying advice, DAW-only questions, or custom protocol implementations."
-compatibility: Targets QLC+ 5 workspace and fixture formats. Static XML editing and offline preview review do not require QLC+; verify QLC+ playback in the target version.
+description: "Helps with QLC+ workspace files (.qxw), scenes, chasers, sequences, collections, EFX, RGB matrices, fixture definitions (.qxf), Virtual Console, and timing calculations. Use for creating or editing QLC+ shows, debugging timing and crossfades, generating fixture definitions, configuring plugins, repairing corrupt workspaces, or troubleshooting HTP and LTP conflicts. Also trigger for SpeedModes, FadeIn, Hold, Duration, FixtureVal, RunOrder, and QLC+ function types. Do not trigger for general DMX hardware questions without QLC+ context, fixture buying advice, DAW-only questions, or custom protocol implementations."
+compatibility: Targets QLC+ 5 workspace and fixture formats. Playback and visual verification require QLC+; static XML editing does not require the application.
 metadata:
   author: razzeee
   source: https://github.com/razzeee/skills/tree/main/qlcplus
@@ -74,7 +74,9 @@ A snapshot of channel values. Key properties:
 
 Runs steps sequentially. Each step is a Function (usually a Scene).
 
-**Step timing:** Read the `Duration`, `FadeIn` and `FadeOut` modes independently. Duration determines when the chaser advances; the fade modes determine how the child transitions. An explicit speed override from a parent takes precedence for that setting.
+**The timing model:** For a finite XML step with `Hold`, the stored duration is the step's `FadeIn + Hold`. `FadeOut` can overlap the next step and does not add to that duration.
+
+**SpeedModes:** Read `Duration`, `FadeIn` and `FadeOut` independently. Duration determines when the chaser advances; the fade modes determine how the child transitions. An explicit speed override from a parent takes precedence for that setting.
 
 | Mode | Duration | FadeIn or FadeOut |
 | --- | --- | --- |
@@ -82,9 +84,7 @@ Runs steps sequentially. Each step is a Function (usually a Scene).
 | `Common` | Chaser's duration | Chaser's fade |
 | `PerStep` | Stored step duration | Step's fade |
 
-For a finite XML step with `Hold`, the stored duration is the step's `FadeIn + Hold`. `FadeOut` can overlap the next step and does not add to that duration. For example, with `Duration="PerStep"` and `FadeIn="Default"`, `<Step FadeIn="500" Hold="1500" ...>` occupies 2000 ms in time mode even though the child supplies the actual fade. With `Hold="0"` the same step still occupies 500 ms.
-
-For a timed SingleShot chaser, sum the effective step durations and compare with the intended cue span. For nested chasers, check when the parent advances: the time it gives the child need not match the child's standalone runtime.
+**Practical implications:** With `Duration="PerStep"` and `FadeIn="Default"`, `<Step FadeIn="500" Hold="1500" ...>` occupies 2000 ms in time mode even though the child supplies the actual fade. With `Hold="0"` the same step still occupies 500 ms.
 
 **Run orders:** Loop, SingleShot, PingPong, Random
 **Direction:** Forward, Backward
@@ -284,13 +284,11 @@ Input profiles map physical controller knobs/faders to QLC+ controls.
 3. **Forgetting channel enablement:** A scene never changes a disabled channel
 4. **Layering monolithic scenes:** When both scenes set intensity, the highest HTP value wins, not the value from the current scene
 
-## Review and revise a cue
+## Timing Calculations
 
-For a recorded or music-synced review, a fixture-coverage question, or a generated workspace rebuild, use [Playback evidence and reproducible rebuilds](references/playback-and-rebuilds.md).
-
-1. Identify the occurrence by its timeline placement or, in a manual cue list, by step and trigger order. Trace its references from the triggering function down to the values that produce the look.
-2. Isolate the occurrence in the authoring source. If two placements reuse a chaser, copy the chaser for the target placement first; then copy and relink any shared child whose values must change. Regenerate the workspace if it is built from that source.
-3. Compare effective channel output at matching times relative to each trigger. For a Random chaser, record and reproduce the actual step order and timing; repeating the start trigger can produce a different run. If the order cannot be reproduced, compare matching transitions and mark whole-run equivalence unverified. In a matched run, confirm only the intended channels change inside the target window, with no differences elsewhere, including repeated uses and the next cue.
+- For a timed SingleShot chaser, sum its effective step durations under the active SpeedModes. On a Show track, add the placement offset to locate a step on the timeline.
+- For nested chasers, check when the parent advances: the time it gives the child need not match the child's standalone runtime. Account for any overlapping fade or separately scheduled tail.
+- When a step behaves differently in playback, see [Troubleshooting workspace playback](references/playback-and-rebuilds.md).
 
 ## Best Practices
 
