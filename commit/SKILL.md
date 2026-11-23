@@ -1,6 +1,6 @@
 ---
 name: commit
-description: "Write commits in the repository's style. Use when the user asks to commit changes, wants a commit message, or says the work is ready to wrap up."
+description: "Write commits in the repository's style. Use when the user asks to commit changes, amend or squash commits, rework branch history, draft a commit message, or wrap up the work."
 compatibility: Requires git, a local repository, and the unslop skill. Creating commits requires write access to the repository.
 metadata:
   author: razzeee
@@ -30,6 +30,13 @@ git diff --staged --no-relative --ignore-submodules=none
 If `git status` reports an operation in progress, including `git am`, ask
 before switching branches, splitting groups, or committing. If the user
 asked to continue the operation, use its continuation command.
+
+For an explicit amend, squash, or history-rework request, rewrite only the
+topic's commits since its base. Amend the topic tip, squash the topic into
+one commit, or regroup its commits by purpose for a history rework. Never
+amend the base. Skip the rewrite if the history already matches the request.
+For a history-only rewrite, verify that the old and new tip trees match.
+When pushing a rewritten topic, use a lease pinned to the inspected remote tip.
 
 Use the request and current conversation to identify the intended changes.
 Leave unrelated or uncertain files out and tell the user why. If the scope

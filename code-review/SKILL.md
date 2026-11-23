@@ -31,6 +31,11 @@ Based on the input provided, determine which type of review to perform:
 
 3. **Branch name**: Compare current branch to the specified branch
    - Run: `git diff <branch>...HEAD`
+   - For "review this branch" without a named base, use the linked pull
+     request's base, otherwise the verified upstream default branch.
+     State the comparison and use the current task as the spec if it
+     explains the intended behavior. Ask only if the choice could change
+     the review.
 
 4. **PR URL or number** (contains "github.com" or "pull" or looks like a PR number): Review the pull request
    - Run: `gh pr view <input>` to get PR context
