@@ -80,59 +80,23 @@ A single logical change belongs in a single commit. But if the staged changes cl
 Plan the groups here. After checking the branch, stage and commit each group
 separately in Step 5, keeping later groups out of the index until their turn.
 
-## Step 2: Check the current branch
+## Check the branch
 
-```bash
-git branch --show-current
-git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null || echo "no remote default"
-```
+Check `git branch --show-current` before staging. If HEAD is detached, ask
+whether to create a branch or commit in place. Keep a suitable topic branch.
+Create a new one for work on a protected, default, integration, or release
+branch, or when the current branch describes a different task.
 
-Before committing, decide whether the current branch is the right place for this work. There are three situations that call for a new branch:
+For decisions that depend on the default branch, verify its name and tip
+with the host or `git ls-remote --symref origin HEAD`. Fetch the branch if
+the tracking ref is stale. For a local-only repository, check its configured
+default. If you cannot verify the default, ask before switching branches.
 
-**1. You're on a protected/shared branch**
-
-These branches should receive changes through pull requests, not direct commits:
-- The repo's default branch (`main`, `master`, or whatever `origin/HEAD` points to)
-- Common integration branches: `develop`, `dev`, `staging`, `next`
-- Release branches matching patterns like `release/*`, `release-*`
-
-**2. The current branch has already been merged**
-
-Resolve the remote default branch from `origin/HEAD`, then check whether the
-current branch has been merged into that ref:
-
-```bash
-git symbolic-ref --short refs/remotes/origin/HEAD
-git branch --merged <remote-default-ref>
-```
-
-If the current branch appears in that list, it has already been merged. Create a new branch instead of adding commits to it. If the remote default ref is unavailable, inspect the repository's refs or ask rather than assuming its name.
-
-**3. The branch topic doesn't match the work**
-
-Compare the current branch name to what the user is actually working on. If you're on `fix/login-redirect` but the user just finished building the CSV export feature, that branch is the wrong home for this commit. Create a new branch that reflects the actual work.
-
-Use the session context to decide whether the branch name still describes the work.
-
----
-
-In all three cases, name the new branch by first checking existing conventions:
-
-```bash
-git branch -a
-```
-
-Common patterns: `feat/add-login`, `fix/null-pointer`, `username/short-description`, `TICKET-123-description`. Match what you see. If there's no clear pattern, use a short kebab-case description of the change.
-
-Create and switch before staging or committing anything:
-
-```bash
-git checkout -b <branch-name>
-```
-
-Tell the user why you're switching and what branch you created: "The current branch `fix/login-redirect` doesn't match this work, so I'll create `feat/csv-export`."
-
-**If HEAD is detached** (not on any branch), warn the user and ask whether to create a branch or commit in place.
+If you suspect the current topic branch has already merged, follow
+[Check a suspected merge](references/merged-topic.md) before switching.
+For other branch switches, create the new branch from HEAD with
+`git checkout -b <branch-name>`. Match existing branch names or use a short
+kebab-case name. Tell the user which branch you created and why.
 
 ## Write the message
 
