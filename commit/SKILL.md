@@ -1,7 +1,7 @@
 ---
 name: commit
-description: "Creates git commits that match the repository's history instead of defaulting to conventional commits. Use this skill whenever the user wants to record changes in git, asks for a commit message, or indicates that the work is ready to wrap up."
-compatibility: Requires git and a local repository. Creating commits requires write access to the repository.
+description: "Write commits in the repository's style. Use when the user asks to commit changes, wants a commit message, or says the work is ready to wrap up."
+compatibility: Requires git, a local repository, and the unslop skill. Creating commits requires write access to the repository.
 metadata:
   author: razzeee
   source: https://github.com/razzeee/skills/tree/main/commit
@@ -9,16 +9,12 @@ metadata:
 
 # Commit
 
-Create one or more commits that accurately describe what changed and why. Match the repository's existing style.
-
-Invoke the `unslop` skill for all prose you write during this workflow, from
-questions and updates to each commit subject, body, and final summary. Apply
-it before sending the text or recording the commit. Preserve exact refs,
+Explain why the work was needed. Invoke `unslop` for all prose, including
+questions, commit messages, and the final summary. Preserve exact refs,
 trailers, and repository formatting.
 
-If the user asks only for a commit message, inspect the relevant diff and
-repository conventions, then return the message without staging, switching
-branches, or creating a commit.
+For a message-only request, inspect the relevant diff, follow **Write the
+message**, and return the text without switching branches, staging, or committing.
 
 ## Step 1: Understand the changes
 
@@ -138,37 +134,26 @@ Tell the user why you're switching and what branch you created: "The current bra
 
 **If HEAD is detached** (not on any branch), warn the user and ask whether to create a branch or commit in place.
 
-## Step 3: Learn the repo's commit style
+## Write the message
 
-Look at recent commits to understand the conventions this repo uses:
+Read the repository's contribution instructions and commit template, if
+present. Inspect complete messages with `git log -20 --format='%B%n---'`
+for subject style, body format, and trailers. Follow explicit requirements
+first, then established conventions. Without history or a required format,
+use plain imperative prose.
 
-```bash
-git log --oneline -20
-```
+Use the current conversation to understand why the user wanted the work.
+If the reason is still unclear, ask. Leave the change list to the diff.
+Mention a surprising change only when it helps explain the reason.
 
-Things to observe:
-- **Subject line format**: Is there a type prefix like `feat:` or `fix(`scope`)`? Or is it plain prose? Or ticket numbers like `[PROJ-123]`?
-- **Capitalization**: Sentence case, title case, or lowercase?
-- **Tense**: Imperative ("add feature"), past tense ("added feature"), or present ("adds feature")?
-- **Length**: How long are subject lines typically?
-- **Body**: Do commits have bodies? Are they common or rare? What do they contain?
-- **Footers**: Any patterns like `Refs:`, `Closes #123`, `BREAKING CHANGE:`?
-
-If the repository has a `CONTRIBUTING.md`, `docs/contributing.md`, or `.gitmessage` file, read it for explicit conventions.
-
-Match what you find. Don't impose a different convention. If the repo uses plain prose with no prefix, don't add `feat:`. If it uses conventional commits, follow the type vocabulary you see in the history.
-
-If the repo has no commits yet, default to plain imperative prose (no type prefix).
-
-## Step 4: Compose the message
-
-Write a commit message that:
-
-1. **Subject line:** One line of no more than 72 characters that matches the repository's style and summarizes what changed.
-2. **Blank line:** Separates the subject from the body when a body is present.
-3. **Body:** Explain why the change was made, relevant tradeoffs, and context that is not clear from the diff. Wrap it at about 72 characters. Omit it for small, self-explanatory changes.
-
-Read the diff carefully and describe the behavior change, not just the filenames.
+- **Subject:** State the reason from the user's perspective when it involves
+  a user goal, problem, or tradeoff. For example: "Avoid making users reapply
+  search filters". Keep it within 72 characters unless the repository says
+  otherwise. If the subject format leaves no room for the reason, use the body.
+- **Body:** Explain motivation or tradeoffs the diff cannot show. Include a
+  body when readers need context, such as migration instructions, or when the
+  repository requires one. Separate it from the subject with a blank line
+  and wrap at about 72 characters unless the repository uses another format.
 
 ## Step 5: Commit
 
