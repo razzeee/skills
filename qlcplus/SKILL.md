@@ -211,6 +211,8 @@ The .qxw file is XML. Common attributes on `<Function>`: `ID`, `Type`, `Name`, `
 - QLC+ reads the times in milliseconds or thousandths of a beat, depending on the tempo setting.
 - function_id references the Function ID of the step content
 
+Before editing a step, check whether you need to [change one use of a shared function](references/playback-and-rebuilds.md#change-one-use-of-a-shared-function) or [rebuild a generated workspace](references/playback-and-rebuilds.md#rebuild-a-generated-workspace).
+
 ---
 
 ## Virtual Console
@@ -288,7 +290,7 @@ Input profiles map physical controller knobs/faders to QLC+ controls.
 
 - For a timed `SingleShot` chaser, add the step durations using the active SpeedModes. To locate a step on a Show track, add the durations of the preceding steps to the chaser's start time.
 - For nested chasers, compare the parent step's duration with the child's runtime. Include any overlapping fade or separately scheduled ending when checking the final cue.
-- If the cue looks wrong at the expected time, see [Troubleshooting workspace playback](references/playback-and-rebuilds.md).
+- If a fixture goes dark at the expected cue time, see [Diagnose an unexpected blackout](references/playback-and-rebuilds.md#a-fixture-goes-dark-unexpectedly).
 
 ## Best Practices
 
