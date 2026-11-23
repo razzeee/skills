@@ -11,6 +11,11 @@ metadata:
 
 Create one or more commits that accurately describe what changed and why. Match the repository's existing style.
 
+Invoke the `unslop` skill for all prose you write during this workflow, from
+questions and updates to each commit subject, body, and final summary. Apply
+it before sending the text or recording the commit. Preserve exact refs,
+trailers, and repository formatting.
+
 If the user asks only for a commit message, inspect the relevant diff and
 repository conventions, then return the message without staging, switching
 branches, or creating a commit.
