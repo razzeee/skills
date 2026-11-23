@@ -1,7 +1,7 @@
 ---
 name: qlcplus
-description: "Helps with QLC+ workspace files (.qxw), scenes, chasers, sequences, collections, EFX, RGB matrices, fixture definitions (.qxf), Virtual Console, and timing calculations. Use for creating or editing QLC+ shows, debugging timing and crossfades, generating fixture definitions, configuring plugins, repairing corrupt workspaces, or troubleshooting HTP and LTP conflicts. Also trigger for SpeedModes, FadeIn, Hold, Duration, FixtureVal, RunOrder, and QLC+ function types. Do not trigger for general DMX hardware questions without QLC+ context, fixture buying advice, DAW-only questions, or custom protocol implementations."
-compatibility: Targets QLC+ 5 workspace and fixture formats. Playback and visual verification require QLC+; static XML editing does not require the application.
+description: "Helps with QLC+ workspace files (.qxw), scenes, chasers, sequences, collections, EFX, RGB matrices, fixture definitions (.qxf), Virtual Console, and timing calculations. Use for creating or editing QLC+ shows, reviewing cues and blackouts, debugging timing and crossfades, generating fixture definitions, configuring plugins, repairing corrupt workspaces, or troubleshooting HTP and LTP conflicts. Also trigger for SpeedModes, FadeIn, Hold, Duration, FixtureVal, RunOrder, and QLC+ function types. Do not trigger for general DMX hardware questions without QLC+ context, fixture buying advice, DAW-only questions, or custom protocol implementations."
+compatibility: Targets QLC+ 5 workspace and fixture formats. Static XML editing and offline preview review do not require QLC+; verify QLC+ playback in the target version.
 metadata:
   author: razzeee
   source: https://github.com/razzeee/skills/tree/main/qlcplus
@@ -26,14 +26,12 @@ that version's documentation or source instead of assuming v5 behavior.
 
 ### HTP vs LTP (Critical for understanding conflicts)
 
-| Rule                           | Channel types                                     | Behavior                            |
+| Rule                           | Default channel types                             | Behavior                            |
 | ------------------------------ | ------------------------------------------------- | ----------------------------------- |
 | HTP (Highest Takes Precedence) | Intensity, dimmer, color intensity (R/G/B/W/A)    | Highest active value wins           |
 | LTP (Latest Takes Precedence)  | Pan, tilt, gobo, strobe, speed, all non-intensity | Most recently started function wins |
 
-HTP uses the higher value when two active scenes set the same dimmer. LTP gives control of non-intensity channels to the function that started last. Start order matters and can cause unexpected jumps.
-
-During crossfades: HTP levels transition smoothly. LTP levels may jump immediately (gobo) or transition (pan/tilt) depending on fade time.
+Check the patched channel for a forced HTP or LTP setting before diagnosing a conflict or blackout. The override takes precedence over the fixture definition's channel group. For example, if a dimmer is forced to LTP, a later scene can lower it even while a brighter scene is active.
 
 ### Fade Out Only Affects HTP
 
@@ -65,48 +63,33 @@ A Palette abstracts a fixture feature (color, position, zoom). Can be used in Sc
 A snapshot of channel values. Key properties:
 
 - **Selective channel control**: Only enabled channels are affected. Disabled channels are NEVER touched. This enables layering.
-- **Fade In**: Time to fade all HTP and LTP channels to their target values. Only scenes apply Fade In to LTP channels.
+- **Fade In**: Fade-capable channels transition to their targets. If a channel snaps despite a nonzero fade, check its fade capability in the fixture profile.
 - **Fade Out**: Time to fade HTP channels to zero. Fade Out does not affect LTP channels, which retain their values.
 - **No duration**: Scenes persist until stopped or overridden
 - Monolithic scenes (all channels enabled) work well for chaser-driven workflows where only one scene is active at a time
 - Partial scenes (only some channels) enable layering but require careful management
-- **Crossfade blending**: When a chaser transitions between two scenes, it calls `setBlendFunctionID`. The new scene reads its starting values from the previous scene, which prevents snapping.
+- **Crossfade blending**: On channels shared by consecutive scenes, the previous scene supplies the starting value. The channel's fade capability still determines whether it transitions or snaps.
 
 ### Chaser
 
 Runs steps sequentially. Each step is a Function (usually a Scene).
 
-**The timing model (from source code):**
+**Step timing:** Read the `Duration`, `FadeIn` and `FadeOut` modes independently. Duration determines when the chaser advances; the fade modes determine how the child transitions. An explicit speed override from a parent takes precedence for that setting.
 
-```
-duration = fadeIn + hold
-```
+| Mode | Duration | FadeIn or FadeOut |
+| --- | --- | --- |
+| `Default` | Chaser's duration | Child function's own fade |
+| `Common` | Chaser's duration | Chaser's fade |
+| `PerStep` | Stored step duration | Step's fade |
 
-- `duration` is the TOTAL step time, not just hold
-- `hold = duration - fadeIn`
-- The step ends when `elapsed >= duration`
-- On step end, `prevStepRoundElapsed = elapsed % duration` carries overshoot into the next step (prevents timing drift)
-- **FadeOut is not included in duration**. It overlaps with the next step or runs after stop
+For a finite XML step with `Hold`, the stored duration is the step's `FadeIn + Hold`. `FadeOut` can overlap the next step and does not add to that duration. For example, with `Duration="PerStep"` and `FadeIn="Default"`, `<Step FadeIn="500" Hold="1500" ...>` occupies 2000 ms in time mode even though the child supplies the actual fade. With `Hold="0"` the same step still occupies 500 ms.
 
-**SpeedModes behavior from the source:**
-
-| Mode        | Meaning                                                                                                                                                            |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Common**  | All steps use the chaser's own `<Speed>` values                                                                                                                    |
-| **PerStep** | Each `<Step>` attribute is used directly                                                                                                                           |
-| **Default** | Passes `Function::defaultSpeed()` (sentinel value UINT_MAX-1) to the child function, meaning the child uses its OWN fade times. The chaser does not override them. |
-
-In Duration mode, `Default` and `Common` both use the chaser's `duration()`.
-
-**Practical implications:**
-
-- With `SpeedModes FadeIn="Default" Duration="PerStep"`: the step's Hold attribute IS the total step time. The child function's own FadeIn is used for crossfading. The Hold value is what contributes to the timeline.
-- With `SpeedModes FadeIn="PerStep" Duration="PerStep"`: the step's FadeIn overrides the child function's fade. Duration = FadeIn + Hold.
+For a timed SingleShot chaser, sum the effective step durations and compare with the intended cue span. For nested chasers, check when the parent advances: the time it gives the child need not match the child's standalone runtime.
 
 **Run orders:** Loop, SingleShot, PingPong, Random
 **Direction:** Forward, Backward
 
-**Beat tempo:** `elapsedBeats` increments by 1000 on each beat. Duration in beats = multiples of 1000 (e.g., 4000 = 4 beats). Set `<Tempo Type="Beats"/>`.
+**Beat tempo:** With `<Tempo Type="Beats"/>`, 1000 timing units represent one beat. A duration of 500 is half a beat; 4000 is four beats.
 
 **Infinite speed** (`Function::infiniteSpeed()`): Step never auto-advances. Used for manual cue lists. The runner checks: `if (duration != infiniteSpeed && elapsed >= duration)`.
 
@@ -146,8 +129,7 @@ Timeline-based function (Show Manager). Places functions on time tracks with pre
 
 **Show Manager key concepts:**
 
-- Multitrack view similar to a DAW. Each track is bound to a Scene
-- Sequences on a track can only control channels of that track's Scene
+- Tracks hold scheduled functions. A track can omit `SceneID`; a Sequence requires a parent Scene and controls its channels.
 - Functions can be placed at precise time positions, dragged, copied
 - Supports BPM grid (4/4, 3/4, 2/2) with snap-to-grid for music sync
 - Tracks support mute/solo states
@@ -162,7 +144,7 @@ Timeline-based function (Show Manager). Places functions on time tracks with pre
 
 ### Script
 
-ECMAScript-based automation of QLC+ functions in sequential order.
+Runs commands in QLC+'s own scripting language, such as starting a function or waiting before the next command. ECMAScript is used for RGB Matrix scripts.
 
 ---
 
@@ -224,11 +206,10 @@ The .qxw file is XML. Common attributes on `<Function>`: `ID`, `Type`, `Name`, `
 
 ### Chaser Step format
 
-`<Step Number="N" FadeIn="ms" Hold="ms" FadeOut="ms" Note="">function_id</Step>`
+`<Step Number="N" FadeIn="0" Hold="1000" FadeOut="0" Note="">function_id</Step>`
 
-- Times in milliseconds
+- Times in milliseconds for time-based playback, or in thousandths of a beat for beat-based playback
 - function_id references the Function ID of the step content
-- Tempo Type="Beats": values are multiples of 1000 (1000 = 1 beat)
 
 ---
 
@@ -248,7 +229,7 @@ Direct channel control or playback fader (controls HTP intensity of a running fu
 - Steps through with Next/Previous/Play/Stop
 - Crossfade fader for manual transitions
 - Set step duration to infinite (∞) for manual crossfade control
-- Duration=0 causes rapid looping. Always set explicit durations
+- A zero-duration step can advance before its look is visible. At the last step, `SingleShot` ends and `Loop` wraps.
 
 ### Solo Frame
 
@@ -298,27 +279,22 @@ Input profiles map physical controller knobs/faders to QLC+ controls.
 
 ## Common Pitfalls
 
-1. **Hold="0" on sub-chaser steps:** QLC+ skips these steps entirely
-2. **SpeedModes FadeIn="PerStep" on a song chaser:** This can cause timing drift compared with `Default`
-3. **Expecting Fade Out to affect LTP channels:** Only HTP channels fade out
-4. **Two scenes setting the same LTP channel:** The scene started last wins, which can cause unexpected jumps
-5. **Cue List steps with duration=0:** These loop rapidly without a visible result
-6. **Forgetting channel enablement:** A scene never changes a disabled channel
-7. **Layering monolithic scenes:** When both scenes set intensity, the highest HTP value wins, not the value from the current scene
+1. **Expecting Fade Out to affect LTP channels:** Only HTP channels fade out
+2. **Two scenes setting the same LTP channel:** The scene started last wins, which can cause unexpected jumps
+3. **Forgetting channel enablement:** A scene never changes a disabled channel
+4. **Layering monolithic scenes:** When both scenes set intensity, the highest HTP value wins, not the value from the current scene
 
-## Timing Calculations
+## Review and revise a cue
 
-When programming song chasers, always verify:
+For a recorded or music-synced review, a fixture-coverage question, or a generated workspace rebuild, use [Playback evidence and reproducible rebuilds](references/playback-and-rebuilds.md).
 
-- `sum(all step Hold values) == song duration` (for SingleShot chasers)
-- Sub-chaser Hold = sum of sub-chaser's own steps' total durations
-- FadeIn happens WITHIN the Hold window (with Default SpeedMode), not in addition to it
+1. Identify the occurrence by its timeline placement or, in a manual cue list, by step and trigger order. Trace its references from the triggering function down to the values that produce the look.
+2. Isolate the occurrence in the authoring source. If two placements reuse a chaser, copy the chaser for the target placement first; then copy and relink any shared child whose values must change. Regenerate the workspace if it is built from that source.
+3. Compare effective channel output at matching times relative to each trigger. For a Random chaser, record and reproduce the actual step order and timing; repeating the start trigger can produce a different run. If the order cannot be reproduced, compare matching transitions and mark whole-run equivalence unverified. In a matched run, confirm only the intended channels change inside the target window, with no differences elsewhere, including repeated uses and the next cue.
 
 ## Best Practices
 
-- Use `SpeedModes FadeIn="Default" FadeOut="Default" Duration="PerStep"` for song chasers
-- Give sub-chaser steps explicit Hold values matching their total runtime
-- Never hold a single static scene longer than ~12s in performance
+- Choose hold length for the cue's purpose. A sustained look can give the next change emphasis.
 - Create front/rear intensity contrast for depth (not symmetric values)
 - Use Solo Frames to prevent accidental scene stacking
 - Keep strobe for punctuation, not atmosphere
