@@ -2,16 +2,16 @@
 
 ## A fixture goes dark unexpectedly
 
-Match the fixture's universe, address and mode to the workspace patch. At the affected step, check the effective output from all active functions, including the master dimmer, colour channels and shutter. A scene can specify a colour while the dimmer is at zero. Check the Grand Master and console Blackout state before editing the scene.
+Check that the fixture's universe, address and mode match the workspace patch. At the dark step, check the combined output of all active functions on the fixture's dimmer, colour and shutter channels. A scene can set a colour while the dimmer is at zero. Check the Grand Master and the console's Blackout control before editing the scene.
 
-If the symptom appears in a recording, a timestamped contact sheet can locate the cue. Use a short clip spanning the transition to judge motion. Compare decoded frames with the DMX changes you expect: a frozen preview can have regular frame timestamps. If only stills are reliable, report the sampled look and leave motion unverified. If DMX matches the cue but coverage is in doubt, check fixture aim and illumination on the rig.
+For a recording, find the cue on a timestamped contact sheet. Watch a short clip of the transition to judge the fade. A frozen picture can have regular frame timestamps, so compare frames where the DMX output predicts a visible change. If only stills are reliable, describe what they show and leave motion unverified. If the DMX output matches the cue but the stage is dark, check where the beam lands on the rig.
 
 ## Change one use of a shared function
 
-Locate the occurrence by timeline placement or manual trigger order. Follow the references down to the scene. If two placements reuse the same chaser, copying the scene alone is insufficient: give the target placement its own chaser, then copy and relink the child whose values need to change.
+Find the occurrence on the timeline or by its position in the manual cue list. Follow the function references to the scene. If two placements share a chaser, copy the chaser for the placement you want to edit. In that copy, point the affected step to a separate copy of the scene.
 
-Compare effective output before, during and after the edited transition, including the release into the next cue. Verify that other occurrences still match. For a Random chaser, reproduce the actual step order and timing or limit the comparison to matching transitions.
+Compare the original and edited DMX output before the transition, through the fade and into the next cue. Check that the other uses of the scene still match. For a `Random` chaser, replay the recorded step order and timing. If you cannot reproduce the run, compare only matching transitions.
 
-## When the workspace is generated
+## Rebuild a generated workspace
 
-Keep the original `.qxw` as the baseline. Identify the authoring source and its inputs before editing; an exported workspace alone does not identify the generator revision. Rebuild into a separate destination, then compare fixture mappings, effective DMX and cue timing. For synced playback, also verify the audio identity and offset. Differences in XML formatting alone do not establish a change in playback.
+Keep the original `.qxw` for comparison. Confirm which generator revision and inputs produced it before editing the source. Rebuild in a separate directory. Compare fixture mappings, DMX output and cue times even if the XML formatting differs. For synced playback, check that both workspaces use the same audio file and offset.
