@@ -16,69 +16,31 @@ trailers, and repository formatting.
 For a message-only request, inspect the relevant diff, follow **Write the
 message**, and return the text without switching branches, staging, or committing.
 
-## Step 1: Understand the changes
+## Choose the scope
 
-Run these in parallel:
-
-```bash
-git status
-git diff
-git diff --staged
-```
-
-If the request or session context does not make the intended changes clear, do
-not guess. Inspect the available targets:
+From the repository root, run these in parallel. Use the same diff options
+for later scope checks.
 
 ```bash
-git status --short
-git branch --all
-git log --oneline -20
+git status --long --untracked-files=all
+git diff --no-relative --ignore-submodules=none
+git diff --staged --no-relative --ignore-submodules=none
 ```
 
-Ask the user what to compare and commit. Offer the relevant choices you found,
-such as:
+If `git status` reports an operation in progress, including `git am`, ask
+before switching branches, splitting groups, or committing. If the user
+asked to continue the operation, use its continuation command.
 
-- All uncommitted changes
-- Only staged changes
-- Specific changed files or groups of related files
-- Changes since a named branch, tag, or commit
-- A specific commit or commit range
-- Another ref supplied by the user
+Use the request and current conversation to identify the intended changes.
+Leave unrelated or uncertain files out and tell the user why. If the scope
+is unclear, offer concrete choices from the changed files, refs, or commit
+ranges and wait for the user to choose.
 
-Show concrete branch names, commit hashes, and changed file groups in the
-choices. Allow the user to select one or more groups. Do not stage or commit
-anything until the user chooses.
-
-If nothing is staged, don't blindly stage everything. First look at what's changed and decide what actually belongs in a commit:
-
-- **Exclude** files that look like temporary edits, local experiments, environment config (`.env`, `*.local`, IDE settings), debug logging added during development, or anything unrelated to the work described in the session
-- **Include** the files that form the logical change and make sense together in the diff
-- Use session context to guide this: if the user described what they were working on, the commit should reflect that work, not everything `git status` happens to show
-
-When unsure about a file, leave it out and tell the user why.
-
-Once you've decided what belongs, keep that file selection for the commit step.
-Check the branch before changing the index, then stage only the intended changes
-as described in Step 5.
-
-## Step 1b: Decide whether to split into multiple commits
-
-A single logical change belongs in a single commit. But if the staged changes clearly contain multiple unrelated things, splitting them produces a cleaner history.
-
-**Split when:**
-- The changes address distinct concerns that could be reverted independently (e.g. a bug fix in `auth.js` + an unrelated dependency bump in `package.json`)
-- The diff spans files from different parts of the codebase with no connection between them
-- The session context suggests separate tasks were completed (e.g. "I fixed the login bug and also added the export feature")
-
-**Don't split when:**
-- The changes work together as one unit (e.g. a new feature file + its test + a README update)
-- The changes are small and the split would be pedantic
-- You would have to stage parts of files to separate the changes cleanly
-
-**When it is ambiguous**, ask whether the user wants one commit or separate commits for the distinct changes.
-
-Plan the groups here. After checking the branch, stage and commit each group
-separately in Step 5, keeping later groups out of the index until their turn.
+Honor the user's commit count, groups, and order. If the user asks to commit
+what's staged, make one commit unless they request or confirm a split.
+When grouping is up to you, keep a change with its tests and documentation.
+Split changes that a maintainer could revert separately. Ask if the grouping is unclear. Keep
+shared-file hunks together unless the user assigns them to separate commits.
 
 ## Check the branch
 
@@ -119,43 +81,23 @@ Mention a surprising change only when it helps explain the reason.
   repository requires one. Separate it from the subject with a blank line
   and wrap at about 72 characters unless the repository uses another format.
 
-## Step 5: Commit
+## Commit and verify
 
-For a staged-only request, preserve the existing index: do not run `git add`
-again on those files. A partially staged file may contain unrelated unstaged
-edits that must remain outside the commit.
+Before staging, check whether the index contains changes outside the agreed
+groups. If so, leave it intact and ask how to handle them. For staged-only
+requests, use the existing index. Staging a partially staged file again can
+include edits the user left out. Otherwise, stage only the current group's
+files or hunks.
 
-For other requests, stage only the intended changes. Stage whole files explicitly
-only when all their changes belong in the commit; otherwise stage the selected
-hunks while preserving existing staged content. Inspect `git diff --staged`
-before committing to confirm the index matches the requested scope.
+If the index contains multiple approved groups, use
+[Split staged changes](references/staged-split.md). If the staged diff
+already matches one complete group and the order is flexible, commit it first.
 
-```bash
-git commit -m "<subject>" -m "<body paragraph 1>" -m "<body paragraph 2>"
-```
+For every commit, inspect the staged diff in the index you will commit.
+When it matches the approved group, save its tree ID with `git write-tree`.
+Commit without path arguments. After success, compare `git rev-parse 'HEAD^{tree}'`
+with the saved ID. If they differ, report the difference and stop before
+adjusting the index or creating another commit.
 
-Or use a heredoc if the message is long:
-
-```bash
-git commit -F - <<'EOF'
-<subject>
-
-<body>
-EOF
-```
-
-## Step 6: Confirm
-
-Show the result. For a single commit:
-
-```bash
-git show --stat HEAD
-```
-
-For multiple commits:
-
-```bash
-git log --oneline -<N>
-```
-
-Tell the user what was committed and provide each commit hash. If you split the work, briefly explain why.
+Confirm the result with `git show --stat HEAD` or `git log --oneline -<N>`
+for multiple commits. Report each hash and briefly explain any split.
